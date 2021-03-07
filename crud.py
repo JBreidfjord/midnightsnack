@@ -14,3 +14,6 @@ def create_post(db: Session, post: schema.PostCreate):
 
 def get_all_posts(db: Session):
     return db.query(Post).all()
+
+def get_post(db: Session, post_id: int):
+    return db.query(Post).filter(Post.id == post_id).scalar()

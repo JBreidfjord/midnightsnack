@@ -1,0 +1,7 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <h2>{{ post.title }}</h2>
+    <p>By {{ post.author.username }} on {{ post.date_posted.date() }}</p>
+    <p>{{ post.content | safe }}</p>
+{% endblock content %}

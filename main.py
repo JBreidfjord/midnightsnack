@@ -50,11 +50,15 @@ def get_db():
 @app.get('/', response_class=HTMLResponse)
 def root(request: Request, db: Session = Depends(get_db)):
     posts = crud.get_all_posts(db=db)
-    return templates.TemplateResponse('home.html', {'request': request, 'posts': posts})
+    return templates.TemplateResponse('home.html', {'request': request, 'title': 'Home', 'posts': posts})
 
 @app.get('/about', response_class=HTMLResponse)
 def about(request: Request):
     return templates.TemplateResponse('about.html', {'request': request, 'title': 'About'})
+
+@app.get('/contact', response_class=HTMLResponse)
+def contact(request: Request):
+    return templates.TemplateResponse('contact.html', {'request': request, 'title': 'Contact'})
 
 # Registration --- Needs to be fixed and finished later ---
 @app.get('/register', response_class=HTMLResponse)
@@ -67,11 +71,19 @@ def register_post(form_data: schema.UserCreate = Form(...)):
     return form_data
 
 # CRUD
-@app.get('/post/new', response_class=HTMLResponse)
+
+# Post Management
+@app.get('/posts/new', response_class=HTMLResponse)
 def new_post(request: Request):
     return templates.TemplateResponse('create_post.html', {'request': request, 'title': 'New Post', 'current_user': 1})
 
-@app.post('/post/new', response_model=schema.PostInfo)
+@app.post('/posts/new', response_model=schema.PostInfo)
 def submit_post(title: str = Form(...), post_content: str = Form(...), user_id: int = Form(...), db: Session = Depends(get_db)):
     post = {'title': title, 'content': post_content, 'user_id': user_id}
     return crud.create_post(db=db, post=post)
+
+# Post Pages
+@app.get('/posts/{post_id}', response_class=HTMLResponse)
+def get_post(request: Request, post_id: int, db: Session = Depends(get_db)):
+    post = crud.get_post(db=db, post_id=post_id)
+    return templates.TemplateResponse('post.html', {'request': request, 'title': post.title, 'post': post})

@@ -7,6 +7,7 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css">
 
     <!-- Custom CSS -->
     <link rel="stylesheet" type="text/css" href="../static/main.css">
@@ -41,8 +42,9 @@
                     <!-- Navbar Left Side -->
                     <div class="navbar-nav mr-auto">
                         <a class="nav-item nav-link" href="/">Home</a>
-                        <a class="nav-item nav-link" href="/about">About</a>
-                        <a class="nav-item nav-link" href="/post/new">New Post</a>
+                        <a class="nav-item nav-link" href="{{ url_for('about')}}">About</a>
+                        <a class="nav-item nav-link" href="{{ url_for('contact')}}">Contact Us</a>
+                        <a class="nav-item nav-link" href="/posts/new">New Post</a>
                     </div>
                     <!-- Navbar Right Side -->
                     <div class="navbar-nav">

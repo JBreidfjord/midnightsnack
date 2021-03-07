@@ -1,4 +1,6 @@
+from typing import Optional
 from pydantic import BaseModel, EmailStr, ValidationError, validator, Field
+from datetime import datetime
 
 class UserBase(BaseModel):
     username: str = Field(title='Username')
@@ -23,6 +25,21 @@ class UserCreate(UserBase):
     def confirm_password_valid(cls, v, values):
         if 'password' in values and v != values['password']:
             raise ValueError('Passwords do not match')
+
+class PostBase(BaseModel):
+    title: str
+    date_posted: Optional[datetime] = datetime.utcnow()
+    content: str
+    user_id: int
+
+class PostCreate(PostBase):
+    pass
+
+class PostInfo(PostBase):
+    pass
+
+    class Config:
+        orm_mode = True
 
 # # Testing
 # user = UserBase(

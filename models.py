@@ -14,7 +14,7 @@ class User(Base):
     image_file = Column(String, nullable=False, default='default.jpg')
     password = Column(String(60), nullable=False)
 
-    posts = relationship('Post', back_populates='author', lazy=True)
+    posts = relationship('Post', backref='author', lazy=True)
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}', '{self.image_file}')"
@@ -27,5 +27,5 @@ class Post(Base):
     content = Column(Text, nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
 
-    def __repr__(self):
-        return f"Post('{self.title}', '{self.date_posted}')"
+    #def __repr__(self):
+        #return f"Post('{self.title}', '{self.date_posted}')"

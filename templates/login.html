@@ -4,7 +4,7 @@
     <div class="content-section">
         <form name="formdata" method="POST" action="">
             <fieldset class="form-group">
-                <legend class="border-bottom mb-4">Register Your Account</legend>
+                <legend class="border-bottom mb-4">Login to Your Account</legend>
                 {% if errors %}
                     <div class="error">
                         <ul>
@@ -13,26 +13,14 @@
                             {% endfor %}
                         </ul>
                     </div>
-                {% elif success %}
-                    <div class="success">
-                        <ul>
-                            <li>Registration successful. Welcome, /insert current user/!</li>
-                        </ul>
-                    </div>
                 {% endif %}
                 <div class="form-group">
                     <input type="text" placeholder="Enter Username" name="username" id="username" required>
                 </div>
                 <div class="form-group">
-                    <input type="text" placeholder="Enter Email" name="email" id="email" required>
-                </div>
-                <div class="form-group">
                     <input type="password" placeholder="Enter Password" name="password" id="password" required>
                 </div>
-                <div class="form-group">
-                    <input type="password" placeholder="Confirm Password" name="confirm_password" id="confirm_password" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Register</button>
+                <button type="submit" class="btn btn-primary">Login</button>
             </fieldset>
         </form>
     </div>

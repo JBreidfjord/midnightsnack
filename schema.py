@@ -1,19 +1,30 @@
 from typing import Optional
-from pydantic import BaseModel, EmailStr, ValidationError, validator, Field
+from pydantic import BaseModel, ValidationError, validator, Field
+from email_validator import EmailNotValidError, validate_email
 from datetime import datetime
 
 class UserBase(BaseModel):
     username: str = Field(title='Username')
-    email: EmailStr = Field(title='Email')
+    email: str = Field(title='Email')
     password: str = Field(title='Password')
-    confirm_password: str = Field(title='Confirm Password')
+    disabled: Optional[bool] = None
 
 class UserCreate(UserBase):
+    confirm_password: str = Field(title='Confirm Password')
+
     @validator('username')
     def username_valid(cls, v):
         if len(v) < 2 or len(v) > 20:
             raise ValueError('Username must be between 2 and 20 characters')
         return v
+
+    @validator('email')
+    def email_valid(cls, v):
+        try:
+            validate_email(v)
+            return v
+        except EmailNotValidError:
+            raise ValueError('Email is not valid')
 
     @validator('password')
     def password_valid(cls, v):
@@ -41,20 +52,7 @@ class PostInfo(PostBase):
     class Config:
         orm_mode = True
 
-# # Testing
-# user = UserBase(
-#     username = 'jbreidfjord',
-#     email = 'jbreidfjord@gmail.com',
-#     password = 'testyboi',
-#     confirm_password = 'testyboi'
-# )
 
-# try:
-#     UserBase(
-#         username = 'jbreidfjord',
-#         email = 'jbreidfjord@gmail.com',
-#         password = 'testyboi',
-#         confirm_password = 'testyboi'
-#     )
-# except ValidationError as e:
-#     print(e)
+class Token(BaseModel):
+    access_token: str
+    token_type: str

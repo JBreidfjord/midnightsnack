@@ -1,0 +1,44 @@
+Registration/Login:
+    ✔ Define User classes in schema.py @done(21-03-06 12:11)
+    ✔ Input validation (length, email, matching passwords) @done(21-03-06 12:11)
+    ✔ Integrate schema with form for proper form validation @done(21-03-10 16:56)
+    ✔ Create registration and login routes @done(21-03-10 20:17)
+
+Profile Pages:
+    ☐ Add profile page for each of us with descriptions/info
+    ☐ Add our top posts
+    ☐ Add our recent posts
+
+☐ login_required as decorator
+☐ Replace Login/Register nav buttons with New Post/Logout when logged in
+☐ How to display html elements to only certain users? E.g. delete/edit button for posts, new post button
+
+Form Validation (Register):
+    ✔ Fix form in HTML @done(21-03-10 15:09)
+    ✔ Fix post request handling @done(21-03-10 16:52)
+    ✔ Redirect back to get request after submission @done(21-03-10 19:26)
+    ✔ Add optional query for redirect to provide error messages @done(21-03-10 19:26)
+    ✔ Add optional query for redirect to provide success message (Registration successful. Welcome, {name}!) @done(21-03-10 19:26)
+    ✔ Implement messages into HTML @done(21-03-10 19:26)
+
+    ☐ Change from Query parameters to Cookie or Headers
+
+Authentication:
+    ✔ Finish reading through FastAPI user guide for auth @done(21-03-12 13:26)
+    ☐ Connect to database
+    ☐ Move all auth related stuff to auth.py
+    ☐ Set up router to access routes
+    Update database to store tokens and hashed passwords:
+        ☐ Change input functions to hash before storing
+        ☐ Update existing data
+        ☐ Verify model correctness
+
+Password Reset:
+    ☐ Mail via Linode, need to enable
+    ☐ Set up form, could maybe do same page? Is that possible without javascript?
+    Could maybe dabble in a little in javascript, just in script tags, good ol vanilla js or jquery?
+    Learning JavaScript book
+
+Auto-blog:
+    ☐ Convert markdown to HTML
+    ☐ Create post

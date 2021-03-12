@@ -13,6 +13,11 @@ class User(Base):
     email = Column(String, unique=True, nullable=False)
     image_file = Column(String, nullable=False, default='default.jpg')
     password = Column(String(60), nullable=False)
+    can_edit = Column(Boolean, default=False)
+    can_post = Column(Boolean, default=False)
+    can_delete = Column(Boolean, default=False)
+    admin = Column(Boolean, default=False)
+    disabled = Column(Boolean, default=False)
 
     posts = relationship('Post', backref='author', lazy=True)
 
@@ -27,5 +32,5 @@ class Post(Base):
     content = Column(Text, nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
 
-    #def __repr__(self):
-        #return f"Post('{self.title}', '{self.date_posted}')"
+    def __repr__(self):
+        return f"Post('{self.title}', '{self.date_posted}')"

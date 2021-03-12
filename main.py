@@ -9,7 +9,7 @@ from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from urllib.parse import quote
-from datetime import datetime
+from datetime import timedelta
 import json
 
 import config, tasks, auth
@@ -41,7 +41,7 @@ Base.metadata.create_all(bind=engine)
 templates = Jinja2Templates(directory='templates')
 
 # OAuth2
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
 
 def decode_token(token):
     return schema.UserBase()
@@ -61,33 +61,32 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail='Could not validate credentials',
-        headers={'WWW-Authenticate', 'Bearer'}
+        headers={'WWW-Authenticate': 'Bearer'}
     )
     try:
-        payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
+        payload = jwt.decode(token, str(config.SECRET_KEY), algorithms=[config.ALGORITHM])
         username: str = payload.get('sub')
         if username is None:
             raise credentials_exception
         token_data = schema.TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = auth.get_user(db=get_db(), username=token_data.username)
+    user = auth.get_user(db=SessionLocal(), username=token_data.username)
     if user is None:
         raise credentials_exception
     return user
-
-# Functions
-def get_post_obj(db: Session, post_id: int):
-    obj = crud.get_post(db=db, post_id=post_id)
-    if obj is None:
-        raise HTTPException(status_code=404, detail='Post not found')
-    return obj
 
 def get_current_active_user(current_user: schema.UserBase = Depends(get_current_user)):
     if current_user.disabled:
         raise HTTPException(status_code=400, detail='Inactive user')
     return current_user
     
+# Functions
+def get_post_obj(db: Session, post_id: int):
+    obj = crud.get_post(db=db, post_id=post_id)
+    if obj is None:
+        raise HTTPException(status_code=404, detail='Post not found')
+    return obj
 
 # Main Pages
 @app.get('/', response_class=HTMLResponse)
@@ -104,8 +103,12 @@ def contact(request: Request):
     return templates.TemplateResponse('contact.html', {'request': request, 'title': 'Contact'})
 
 # Authentication
-@app.post('/token')
-def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+@app.get('/login', response_class=HTMLResponse)
+def login(request: Request, errors: Optional[List[str]] = Query(None), success: Optional[bool] = Query(None)):
+    return templates.TemplateResponse('login.html', {'request': request, 'title': 'Login', 'errors': errors, 'success': success})
+
+@app.post('/login')
+def login(form_data: OAuth2PasswordRequestForm = Depends()):
     user = auth.authenticate_user(username=form_data.username, password=form_data.password, db=SessionLocal())
     if not user:
         raise HTTPException(
@@ -113,19 +116,11 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
             detail='Incorrect username or password',
             headers={'WWW-Authenticate': 'Bearer'}
         )
-    access_token_expires = datetime.timedelta(minutes=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = auth.create_access_token(
         data={'sub': user.username}, expires_delta=access_token_expires
     )
     return {'access_token': access_token, 'token_type': 'bearer'}
-
-@app.get('/login', response_class=HTMLResponse)
-def login(request: Request, errors: Optional[List[str]] = Query(None), success: Optional[bool] = Query(None)):
-    return templates.TemplateResponse('login.html', {'request': request, 'title': 'Login', 'errors': errors, 'success': success})
-
-@app.post('/login')
-def login(username: str = Form(...), password: str = Form(...)):
-    pass
 
 @app.get('/register', response_class=HTMLResponse)
 def register(request: Request, errors: Optional[List[str]] = Query(None), success: Optional[bool] = Query(None)):

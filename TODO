@@ -25,7 +25,12 @@ Form Validation (Register):
 
 Authentication:
     ✔ Finish reading through FastAPI user guide for auth @done(21-03-12 13:26)
-    ☐ Connect to database
+    ✔ Connect to database @done(21-03-12 14:19)
+    ☐ Enable token storage, how do they stay logged in now that they have a token?
+    ☐ Lock certain routes behind authentication
+    ☐ Change navbar based on login status
+    ☐ Logout route/function
+    ☐ Logout button in navbar
     ☐ Move all auth related stuff to auth.py
     ☐ Set up router to access routes
     Update database to store tokens and hashed passwords:

@@ -22,7 +22,7 @@ class User(Base):
     posts = relationship('Post', backref='author', lazy=True)
 
     def __repr__(self):
-        return f"User('{self.username}', '{self.email}', '{self.image_file}')"
+        return f"User('{self.username}', '{self.email}')"
 
 class Post(Base):
     __tablename__ = 'posts'

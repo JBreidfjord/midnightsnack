@@ -1,17 +1,20 @@
-from fastapi import FastAPI, Request, Form, Depends, HTTPException, Query, Header, Cookie
+from fastapi import FastAPI, Request, Form, Depends, HTTPException, Query, status
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, Response, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from jose import jwt, JWTError
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from urllib.parse import quote
+from datetime import datetime
 import json
 
-import config, tasks
+import config, tasks, auth
 import schema, crud
+from models import User, Post
 from database import SessionLocal, engine, Base
 
 def get_application():
@@ -55,17 +58,26 @@ def get_db():
         db.close()
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
-    user = decode_token(token)
-    if not user:
-        raise HTTPException(
-            status_code=401,
-            detail='Invalid authentication credentials',
-            headers={'WWW-Authenticate': 'Bearer'},
-        )
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail='Could not validate credentials',
+        headers={'WWW-Authenticate', 'Bearer'}
+    )
+    try:
+        payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
+        username: str = payload.get('sub')
+        if username is None:
+            raise credentials_exception
+        token_data = schema.TokenData(username=username)
+    except JWTError:
+        raise credentials_exception
+    user = auth.get_user(db=get_db(), username=token_data.username)
+    if user is None:
+        raise credentials_exception
     return user
 
 # Functions
-def get_post_obj(db, post_id):
+def get_post_obj(db: Session, post_id: int):
     obj = crud.get_post(db=db, post_id=post_id)
     if obj is None:
         raise HTTPException(status_code=404, detail='Post not found')
@@ -93,17 +105,19 @@ def contact(request: Request):
 
 # Authentication
 @app.post('/token')
-def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    db = get_db()
-    user_dict = db.get(form_data.username)
-    if not user_dict:
-        raise HTTPException(status_code=400, detail='Incorrect username or password')
-    user = schema.UserBase(**user_dict)
-    hashed_password = hash_password(form_data.password)
-    if not hashed_password == user.password:
-        raise HTTPException(status_code=400, detail='Incorrect username or password')
-
-    return {'access_token': user.username, 'token_type': 'bearer'}
+def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = auth.authenticate_user(username=form_data.username, password=form_data.password, db=SessionLocal())
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Incorrect username or password',
+            headers={'WWW-Authenticate': 'Bearer'}
+        )
+    access_token_expires = datetime.timedelta(minutes=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = auth.create_access_token(
+        data={'sub': user.username}, expires_delta=access_token_expires
+    )
+    return {'access_token': access_token, 'token_type': 'bearer'}
 
 @app.get('/login', response_class=HTMLResponse)
 def login(request: Request, errors: Optional[List[str]] = Query(None), success: Optional[bool] = Query(None)):
@@ -119,12 +133,15 @@ def register(request: Request, errors: Optional[List[str]] = Query(None), succes
 
 @app.post('/register', response_class=RedirectResponse)
 def register(username: str = Form(...), email: str = Form(...), password: str = Form(...), confirm_password: str = Form(...)):
-    data = {'username': username, 'email': email, 'password': password, 'confirm_password': confirm_password}
+    verify_data = {'username': username, 'email': email, 'password': password, 'confirm_password': confirm_password}
+    hashed_password = auth.get_password_hash(password)
+    user_data = {'username': username, 'email': email, 'password': hashed_password}
     try:
-        user = schema.UserCreate(**data)
-        db = get_db()
-        #db.add(user)
-        #db.commit()
+        schema.UserCreate(**verify_data)
+        user = User(**user_data)
+        db = SessionLocal()
+        db.add(user)
+        db.commit()
         return RedirectResponse(url=f'/register?success=True', status_code=303)
     except ValidationError as exception:
         errors = [f"errors={quote(error['msg'])}" for error in exception.errors()]

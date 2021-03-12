@@ -8,6 +8,8 @@ VERSION = '0.0.1'
 API_PREFIX = ''
 
 SECRET_KEY = config('SECRET_KEY', cast=Secret, default='CHANGEME')
+ALGORITHM = config('ALGORITHM', cast=str)
+ACCESS_TOKEN_EXPIRE_MINUTES = config('ACCESS_TOKEN_EXPIRE_MINUTES', cast=int, default=15)
 
 POSTGRES_USER = config('POSTGRES_USER', cast=str)
 POSTGRES_PASSWORD = config('POSTGRES_PASSWORD', cast=Secret)

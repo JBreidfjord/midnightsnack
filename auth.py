@@ -17,7 +17,8 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 def get_user(db: Session, username: str):
-    user = db.execute(select(User).where(User.username == username)).scalar()
+    db_user = db.execute(select(User).where(User.username == username)).scalar()
+    user = schema.User.from_orm(db_user)
     return user
 
 def authenticate_user(db: Session, username: str, password: str):
@@ -28,8 +29,8 @@ def authenticate_user(db: Session, username: str, password: str):
         return False
     return user
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    to_encode = data.copy()
+def create_access_token(data: schema.User, expires_delta: Optional[timedelta] = None):
+    to_encode = data.dict()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:

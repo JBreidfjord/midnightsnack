@@ -1,3 +1,4 @@
+from models import User
 from typing import Optional
 from pydantic import BaseModel, ValidationError, validator, Field
 from email_validator import EmailNotValidError, validate_email
@@ -37,6 +38,12 @@ class UserCreate(UserBase):
         if 'password' in values and v != values['password']:
             raise ValueError('Passwords do not match')
 
+class User(UserBase):
+    pass
+
+    class Config:
+        orm_mode = True
+
 class PostBase(BaseModel):
     title: str
     date_posted: Optional[datetime] = datetime.utcnow()
@@ -56,6 +63,10 @@ class PostInfo(PostBase):
 class Token(BaseModel):
     access_token: str
     token_type: str
+    user: User
+
+    class Config:
+        arbitrary_types_allowed = True
 
 class TokenData(BaseModel):
     username: Optional[str] = None

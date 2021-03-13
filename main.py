@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Form, Depends, HTTPException, Query, status
+from fastapi import FastAPI, Request, Form, Depends, HTTPException, Query, status, Cookie
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, Response, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -46,9 +46,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
 def decode_token(token):
     return schema.UserBase()
 
-def hash_password(password: str):
-    return 'hash' + password
-
 # Dependency
 def get_db():
     try:
@@ -65,16 +62,13 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     )
     try:
         payload = jwt.decode(token, str(config.SECRET_KEY), algorithms=[config.ALGORITHM])
-        username: str = payload.get('sub')
-        if username is None:
+        try:
+            token_data = schema.User(**payload)
+            return token_data
+        except ValidationError:
             raise credentials_exception
-        token_data = schema.TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = auth.get_user(db=SessionLocal(), username=token_data.username)
-    if user is None:
-        raise credentials_exception
-    return user
 
 def get_current_active_user(current_user: schema.UserBase = Depends(get_current_user)):
     if current_user.disabled:
@@ -108,7 +102,7 @@ def login(request: Request, errors: Optional[List[str]] = Query(None), success: 
     return templates.TemplateResponse('login.html', {'request': request, 'title': 'Login', 'errors': errors, 'success': success})
 
 @app.post('/login')
-def login(form_data: OAuth2PasswordRequestForm = Depends()):
+def login(response: Response, form_data: OAuth2PasswordRequestForm = Depends()):
     user = auth.authenticate_user(username=form_data.username, password=form_data.password, db=SessionLocal())
     if not user:
         raise HTTPException(
@@ -118,8 +112,9 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
         )
     access_token_expires = timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = auth.create_access_token(
-        data={'sub': user.username}, expires_delta=access_token_expires
+        data=user, expires_delta=access_token_expires
     )
+    response.set_cookie(key='access_token', value=access_token, httponly=True, secure=True)
     return {'access_token': access_token, 'token_type': 'bearer'}
 
 @app.get('/register', response_class=HTMLResponse)
@@ -144,9 +139,12 @@ def register(username: str = Form(...), email: str = Form(...), password: str = 
         return RedirectResponse(url=f'/register{query}', status_code=303)
 
 # Users
-@app.get('/users/me')
-def read_current_user(current_user: schema.UserBase = Depends(get_current_active_user)):
-    return current_user
+@app.get('/users/me', response_model=schema.User)
+def read_current_user(current_user: schema.User = Depends(get_current_active_user), db: Session = Depends(get_db), access_token: Optional[str] = Cookie(None)):
+    user = auth.get_user(db=db, username=current_user.username)
+    if user is None:
+        raise HTTPException(status_code=404, detail='User not found')
+    return user
 
 # CRUD
 # Post Management

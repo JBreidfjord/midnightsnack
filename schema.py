@@ -1,8 +1,12 @@
-from models import User
+from sqlalchemy import select
+from database import SessionLocal
+import models
 from typing import Optional
 from pydantic import BaseModel, ValidationError, validator, Field
 from email_validator import EmailNotValidError, validate_email
 from datetime import datetime
+
+db = SessionLocal()
 
 class UserBase(BaseModel):
     username: str = Field(title='Username')
@@ -22,12 +26,16 @@ class UserCreate(UserInfo):
     def username_valid(cls, v):
         if len(v) < 2 or len(v) > 20:
             raise ValueError('Username must be between 2 and 20 characters')
+        if db.execute(select(models.User.username).where(models.User.username == v)).scalar():
+            raise ValueError('Username already exists')
         return v
 
     @validator('email')
     def email_valid(cls, v):
         try:
             validate_email(v)
+            if db.execute(select(models.User.email).where(models.User.email == v)):
+                raise ValueError('Email already exists')
             return v
         except EmailNotValidError:
             raise ValueError('Email is not valid')

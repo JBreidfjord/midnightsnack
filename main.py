@@ -115,7 +115,7 @@ def register(username: str = Form(...), email: str = Form(...), password: str = 
 # Users
 @app.get('/users/me')
 def read_current_user(user: User = Depends(auth.verify_token), db: Session = Depends(get_db)):
-    return user
+    return user.username
 
 # CRUD
 # Post Management

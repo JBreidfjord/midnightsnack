@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, ForeignKey, Boolean, DateTime, Text
+from sqlalchemy import Column, String, Integer, ForeignKey, Boolean, DateTime, Text, PickleType
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
@@ -12,10 +12,7 @@ class User(Base):
     email = Column(String, unique=True, nullable=False)
     image_file = Column(String, nullable=False, default='default.jpg')
     password = Column(String(60), nullable=False)
-    can_edit = Column(Boolean, default=False)
-    can_post = Column(Boolean, default=False)
-    can_delete = Column(Boolean, default=False)
-    admin = Column(Boolean, default=False)
+    scopes = Column(PickleType, default=[])
     disabled = Column(Boolean, default=False)
 
     posts = relationship('Post', backref='author', lazy=True)

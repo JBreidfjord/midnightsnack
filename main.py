@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Form, Depends, HTTPException, Query, status, Cookie
+from fastapi import FastAPI, Request, Form, Depends, HTTPException, Query, status, Security
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, Response, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -79,10 +79,11 @@ def login(response: Response, form_data: OAuth2PasswordRequestForm = Depends()):
         )
     access_token_expires = timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = auth.create_access_token(
-        data={'sub': user.username}, expires_delta=access_token_expires
+        data={'sub': user.username, 'scopes': user.scopes}, expires_delta=access_token_expires
     )
     response = RedirectResponse(url='/', status_code=303)
-    response.set_cookie(key='Authorization', value=f'Bearer {access_token}', httponly=True, secure=True)
+    cookie_expires = config.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    response.set_cookie(key='Authorization', value=f'Bearer {access_token}', httponly=True, secure=True, max_age=cookie_expires, expires=cookie_expires)
     return response
 
 @app.get('/logout', response_class=RedirectResponse)
@@ -125,16 +126,16 @@ def read_current_user(user: User = Depends(auth.verify_token), db: Session = Dep
 
 # CRUD
 # Post Management
-@app.get('/posts/new', response_class=HTMLResponse)
-def new_post(request: Request, token: str = Depends(auth.oauth2_scheme)):
-    return templates.TemplateResponse('create_post.html', {'request': request, 'title': 'New Post', 'current_user': 1})
+@app.get('/posts/new', response_class=HTMLResponse, dependencies=[Security(auth.verify_token, scopes=['post'])])
+def new_post(request: Request):
+    return templates.TemplateResponse('create_post.html', {'request': request, 'title': 'New Post'})
 
 @app.post('/posts/new', response_model=schema.PostInfo)
-def submit_post(title: str = Form(...), post_content: str = Form(...), user_id: int = Form(...), db: Session = Depends(get_db)):
-    post = {'title': title, 'content': post_content, 'user_id': user_id}
+def submit_post(title: str = Form(...), post_content: str = Form(...), db: Session = Depends(get_db), user: User = Security(auth.verify_token, scopes=['post'])):
+    post = {'title': title, 'content': post_content, 'user_id': user.id}
     return crud.create_post(db=db, post=post)
 
-@app.delete('/posts/{post_id}')
+@app.delete('/posts/{post_id}', dependencies=[Security(auth.verify_token, scopes=['delete'])])
 def del_post(post_id: int, db: Session = Depends(get_db)):
     get_post_obj(db=db, post_id=post_id)
     crud.del_post(db=db, post_id=post_id)

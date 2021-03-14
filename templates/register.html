@@ -5,15 +5,16 @@
         <form name="formdata" method="POST" action="">
             <fieldset class="form-group">
                 <legend class="border-bottom mb-4">Register Your Account</legend>
-                {% if errors %}
+                {% if request.cookies.get('Errors') %}
                     <div class="error">
+                        {% set errors = request.cookies.get('Errors').split(':') %}
                         <ul>
                             {% for error in errors %}
                                 <li>{{ error }}</li>
                             {% endfor %}
                         </ul>
                     </div>
-                {% elif success %}
+                {% elif request.cookies.get('Success') %}
                     <div class="success">
                         <ul>
                             <li>Registration successful. Welcome, /insert current user/!</li>

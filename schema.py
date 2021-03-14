@@ -34,7 +34,7 @@ class UserCreate(UserInfo):
     def email_valid(cls, v):
         try:
             validate_email(v)
-            if db.execute(select(models.User.email).where(models.User.email == v)):
+            if db.execute(select(models.User.email).where(models.User.email == v)).scalar():
                 raise ValueError('Email already exists')
             return v
         except EmailNotValidError:

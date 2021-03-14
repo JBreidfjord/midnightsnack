@@ -9,7 +9,6 @@ Profile Pages:
     ☐ Add our top posts
     ☐ Add our recent posts
 
-☐ login_required as decorator
 ☐ Replace Login/Register nav buttons with New Post/Logout when logged in
 ☐ How to display html elements to only certain users? E.g. delete/edit button for posts, new post button
 
@@ -20,9 +19,9 @@ Form Validation (Register):
     ✔ Add optional query for redirect to provide error messages @done(21-03-10 19:26)
     ✔ Add optional query for redirect to provide success message (Registration successful. Welcome, {name}!) @done(21-03-10 19:26)
     ✔ Implement messages into HTML @done(21-03-10 19:26)
-    ☐ Add check for if username/email already exists
-
-    ☐ Change from Query parameters to Cookie or Headers
+    ✔ Add check for if username/email already exists @done(21-03-14 10:58)
+    ✔ Change from Query parameters to Cookies @done(21-03-14 11:21)
+    ✔ Read cookies in HTML to display errors @done(21-03-14 11:40)
 
 Authentication:
     ✔ Finish reading through FastAPI user guide for auth @done(21-03-12 13:26)
@@ -42,9 +41,7 @@ Authentication:
 
 Password Reset:
     ☐ Mail via Linode, need to enable
-    ☐ Set up form, could maybe do same page? Is that possible without javascript?
-    Could maybe dabble in a little in javascript, just in script tags, good ol vanilla js or jquery?
-    Learning JavaScript book
+    ☐ Set up form/page
 
 Auto-blog:
     ☐ Convert markdown to HTML
@@ -52,10 +49,6 @@ Auto-blog:
 
 New features:
     ☐ Custom 404/status pages
-
-<script>
-    document.cookie.match(/^(.*;)?\s*Authorization\s*=\s*[^;]+(.*)?$/);
-</script>
 
 ✔ Verify token @done(21-03-13 13:37)
 ☐ is_admin

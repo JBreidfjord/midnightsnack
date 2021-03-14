@@ -35,9 +35,9 @@ Authentication:
     ☐ Move all auth related stuff to auth.py
     ☐ Set up router to access routes
     Update database to store tokens and hashed passwords:
-        ☐ Change input functions to hash before storing
-        ☐ Update existing data
-        ☐ Verify model correctness
+        ✔ Change input functions to hash before storing @done(21-03-13 15:46)
+        ✔ Update existing data @done(21-03-13 15:46)
+        ✔ Verify model correctness @done(21-03-13 15:46)
     ✔ Verify token @done(21-03-13 13:37)
     ✔ Set scopes @done(21-03-14 15:20)
 

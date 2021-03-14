@@ -1,15 +1,15 @@
 from fastapi import FastAPI, Request, Form, Depends, HTTPException, Query, status, Security
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse, Response, RedirectResponse
+from fastapi.responses import HTMLResponse, Response, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
-from jose import jwt, JWTError
+from fastapi.openapi.utils import get_openapi
+from fastapi.openapi.docs import get_swagger_ui_html
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from typing import List, Optional
-from urllib.parse import quote
 from datetime import timedelta
 import json
 
@@ -20,7 +20,7 @@ from database import SessionLocal, engine, Base
 from dependencies import get_db
 
 def get_application():
-    app = FastAPI(title=config.PROJECT_NAME, version=config.VERSION)
+    app = FastAPI(title=config.PROJECT_NAME, version=config.VERSION, docs_url=None, redoc_url=None, openapi_url=None)
     
     app.add_middleware(
         CORSMiddleware,
@@ -146,3 +146,12 @@ def del_post(post_id: int, db: Session = Depends(get_db)):
 def get_post(request: Request, post_id: int, db: Session = Depends(get_db)):
     post = crud.get_post(db=db, post_id=post_id)
     return templates.TemplateResponse('post.html', {'request': request, 'title': post.title, 'post': post})
+
+# Docs
+@app.get('/openapi.json', dependencies=[Security(auth.verify_token, scopes=['admin'])])
+def get_openapi_json():
+    return JSONResponse(get_openapi(title=config.PROJECT_NAME, version=config.VERSION, routes=app.routes))
+
+@app.get('/docs', dependencies=[Security(auth.verify_token, scopes=['admin'])])
+def get_docs():
+    return get_swagger_ui_html(openapi_url='/openapi.json', title='Docs')

@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from database import SessionLocal
 import models
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel, ValidationError, validator, Field
 from email_validator import EmailNotValidError, validate_email
 from datetime import datetime
@@ -15,6 +15,7 @@ class UserBase(BaseModel):
 
 class UserInfo(UserBase):
     password: str = Field(title='Password')
+    scopes: Optional[list] = []
 
     class Config:
         orm_mode = True
@@ -83,3 +84,4 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: Optional[str] = None
+    scopes: List[str] = []

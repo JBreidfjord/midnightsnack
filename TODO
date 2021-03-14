@@ -38,6 +38,8 @@ Authentication:
         ☐ Change input functions to hash before storing
         ☐ Update existing data
         ☐ Verify model correctness
+    ✔ Verify token @done(21-03-13 13:37)
+    ✔ Set scopes @done(21-03-14 15:20)
 
 Password Reset:
     ☐ Mail via Linode, need to enable
@@ -50,13 +52,11 @@ Auto-blog:
 New features:
     ☐ Custom 404/status pages
 
-✔ Verify token @done(21-03-13 13:37)
-☐ is_admin
-☐ can_edit
-☐ can_delete
-☐ can_post
-☐ is_active
-
 ✔ Change User schemas, base should contain only import info like username, email, image @done(21-03-13 13:48)
 
 ☐ Simplify db tasks, use onstartup and onshutdown events from fastapi
+
+☐ Truncate post previews on home page, limit to certain character length
+
+Admin Page:
+    ☐ Permissions setting page to allow me to change a user's permissions

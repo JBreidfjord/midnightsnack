@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from fastapi import Depends, HTTPException, status, Request, status
 from typing import Optional
 from fastapi.openapi.models import OAuthFlows
-from fastapi.security import OAuth2
+from fastapi.security import OAuth2, SecurityScopes
 from fastapi.security.utils import get_authorization_scheme_param
 from passlib.context import CryptContext
 from jose import JWTError, jwt
@@ -48,7 +48,12 @@ class OAuth2PasswordBearerCookie(OAuth2):
                 return None
         return param
 
-oauth2_scheme = OAuth2PasswordBearerCookie(tokenUrl='/login')
+oauth2_scheme = OAuth2PasswordBearerCookie(tokenUrl='/login', scopes={
+    'admin': 'Gives access to admin page',
+    'edit': 'Gives ability to edit posts',
+    'post': 'Gives ability to create posts',
+    'delete': 'Gives ability to delete posts'
+})
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
@@ -82,18 +87,34 @@ def create_access_token(data: schema.UserInfo, expires_delta: Optional[timedelta
     encoded_jwt = jwt.encode(to_encode, str(config.SECRET_KEY), algorithm=config.ALGORITHM)
     return encoded_jwt
 
-def verify_token(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def verify_token(security_scopes: SecurityScopes, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    if security_scopes.scopes:
+        authenticate_value = f'Bearer scope="{security_scopes.scope_str}"'
+    else:
+        authenticate_value = 'Bearer'
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail='Could not validate credentials',
-        headers={'WWW-Authenticate': 'Bearer'}
+        headers={'WWW-Authenticate': authenticate_value}
     )
     try:
         payload = jwt.decode(token, str(config.SECRET_KEY), algorithms=[config.ALGORITHM])
-        try:
-            user = db.execute(select(User).where(User.username == payload.get('sub'))).scalar()
-            return user
-        except ValidationError:
+        username: str = payload.get('sub')
+        if not username:
             raise credentials_exception
-    except JWTError:
+        token_scopes = payload.get('scopes', [])
+        token_data = schema.TokenData(scopes=token_scopes, username=username)
+    except (JWTError, ValidationError):
         raise credentials_exception
+    user = db.execute(select(User).where(User.username == token_data.username)).scalar()
+    if not user:
+        raise credentials_exception
+    for scope in security_scopes.scopes:
+        if scope not in token_data.scopes:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail='Not enough permissions',
+                headers={'WWW-Authenticate': authenticate_value}
+            )
+    return user

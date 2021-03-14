@@ -92,8 +92,8 @@ def logout(response: Response):
     return response
 
 @app.get('/register', response_class=HTMLResponse)
-def register(request: Request, errors: Optional[List[str]] = Query(None), success: Optional[bool] = Query(None)):
-    return templates.TemplateResponse('register.html', {'request': request, 'title': 'Register', 'errors': errors, 'success': success})
+def register(request: Request):
+    return templates.TemplateResponse('register.html', {'request': request, 'title': 'Register'})
 
 @app.post('/register', response_class=RedirectResponse)
 def register(username: str = Form(...), email: str = Form(...), password: str = Form(...), confirm_password: str = Form(...)):
@@ -106,11 +106,17 @@ def register(username: str = Form(...), email: str = Form(...), password: str = 
         db = SessionLocal()
         db.add(user)
         db.commit()
-        return RedirectResponse(url=f'/register?success=True', status_code=303)
+        response = RedirectResponse(url=f'/register', status_code=303)
+        response.delete_cookie(key='Errors')
+        response.set_cookie(key='Success', value=True, max_age=30, expires=30)
+        return response
     except ValidationError as exception:
-        errors = [f"errors={quote(error['msg'])}" for error in exception.errors()]
-        query = '?' + '&'.join(errors)
-        return RedirectResponse(url=f'/register{query}', status_code=303)
+        errors = [error['msg'] for error in exception.errors()]
+        error_str = ':'.join(errors)
+        response = RedirectResponse(url=f'/register', status_code=303)
+        response.delete_cookie(key='Success')
+        response.set_cookie(key='Errors', value=error_str, max_age=30, expires=30)
+        return response
 
 # Users
 @app.get('/users/me')

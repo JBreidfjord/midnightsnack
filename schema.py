@@ -7,10 +7,15 @@ from datetime import datetime
 class UserBase(BaseModel):
     username: str = Field(title='Username')
     email: str = Field(title='Email')
-    password: str = Field(title='Password')
     disabled: Optional[bool] = None
 
-class UserCreate(UserBase):
+class UserInfo(UserBase):
+    password: str = Field(title='Password')
+
+    class Config:
+        orm_mode = True
+
+class UserCreate(UserInfo):
     confirm_password: str = Field(title='Confirm Password')
 
     @validator('username')

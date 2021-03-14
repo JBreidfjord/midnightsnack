@@ -27,11 +27,12 @@ Form Validation (Register):
 Authentication:
     ✔ Finish reading through FastAPI user guide for auth @done(21-03-12 13:26)
     ✔ Connect to database @done(21-03-12 14:19)
-    ☐ Set redirects for login/logout routes
+    ☐ Set redirects for login route
     ☐ Lock certain routes behind authentication
     ☐ Change navbar based on login status
-    ☐ Logout route/function
-    ☐ Logout button in navbar
+    ✔ Logout route/function @done(21-03-13 14:37)
+    ✔ Logout button in navbar @done(21-03-13 14:37)
+    ☐ Set up redirects for logout route
     ☐ Move all auth related stuff to auth.py
     ☐ Set up router to access routes
     Update database to store tokens and hashed passwords:
@@ -53,5 +54,16 @@ New features:
     ☐ Custom 404/status pages
 
 <script>
-    document.cookie.match(/^(.*;)?\s*access_token\s*=\s*[^;]+(.*)?$/);
+    document.cookie.match(/^(.*;)?\s*Authorization\s*=\s*[^;]+(.*)?$/);
 </script>
+
+✔ Verify token @done(21-03-13 13:37)
+☐ is_admin
+☐ can_edit
+☐ can_delete
+☐ can_post
+☐ is_active
+
+✔ Change User schemas, base should contain only import info like username, email, image @done(21-03-13 13:48)
+
+☐ Simplify db tasks, use onstartup and onshutdown events from fastapi

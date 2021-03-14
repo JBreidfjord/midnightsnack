@@ -3,10 +3,11 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, Response, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 from jose import jwt, JWTError
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 from typing import List, Optional
 from urllib.parse import quote
 from datetime import timedelta
@@ -16,6 +17,7 @@ import config, tasks, auth
 import schema, crud
 from models import User, Post
 from database import SessionLocal, engine, Base
+from dependencies import get_db
 
 def get_application():
     app = FastAPI(title=config.PROJECT_NAME, version=config.VERSION)
@@ -39,41 +41,6 @@ app = get_application()
 Base.metadata.create_all(bind=engine)
 
 templates = Jinja2Templates(directory='templates')
-
-# OAuth2
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
-
-def decode_token(token):
-    return schema.UserBase()
-
-# Dependency
-def get_db():
-    try:
-        db = SessionLocal()
-        yield db
-    finally:
-        db.close()
-
-def get_current_user(token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail='Could not validate credentials',
-        headers={'WWW-Authenticate': 'Bearer'}
-    )
-    try:
-        payload = jwt.decode(token, str(config.SECRET_KEY), algorithms=[config.ALGORITHM])
-        try:
-            token_data = schema.User(**payload)
-            return token_data
-        except ValidationError:
-            raise credentials_exception
-    except JWTError:
-        raise credentials_exception
-
-def get_current_active_user(current_user: schema.UserBase = Depends(get_current_user)):
-    if current_user.disabled:
-        raise HTTPException(status_code=400, detail='Inactive user')
-    return current_user
     
 # Functions
 def get_post_obj(db: Session, post_id: int):
@@ -101,7 +68,7 @@ def contact(request: Request):
 def login(request: Request, errors: Optional[List[str]] = Query(None), success: Optional[bool] = Query(None)):
     return templates.TemplateResponse('login.html', {'request': request, 'title': 'Login', 'errors': errors, 'success': success})
 
-@app.post('/login')
+@app.post('/login', response_class=RedirectResponse)
 def login(response: Response, form_data: OAuth2PasswordRequestForm = Depends()):
     user = auth.authenticate_user(username=form_data.username, password=form_data.password, db=SessionLocal())
     if not user:
@@ -112,10 +79,17 @@ def login(response: Response, form_data: OAuth2PasswordRequestForm = Depends()):
         )
     access_token_expires = timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = auth.create_access_token(
-        data=user, expires_delta=access_token_expires
+        data={'sub': user.username}, expires_delta=access_token_expires
     )
-    response.set_cookie(key='access_token', value=access_token, httponly=True, secure=True)
-    return {'access_token': access_token, 'token_type': 'bearer'}
+    response = RedirectResponse(url='/', status_code=303)
+    response.set_cookie(key='Authorization', value=f'Bearer {access_token}', httponly=True, secure=True)
+    return response
+
+@app.get('/logout', response_class=RedirectResponse)
+def logout(response: Response):
+    response = RedirectResponse(url='/', status_code=303)
+    response.delete_cookie(key='Authorization')
+    return response
 
 @app.get('/register', response_class=HTMLResponse)
 def register(request: Request, errors: Optional[List[str]] = Query(None), success: Optional[bool] = Query(None)):
@@ -139,17 +113,14 @@ def register(username: str = Form(...), email: str = Form(...), password: str = 
         return RedirectResponse(url=f'/register{query}', status_code=303)
 
 # Users
-@app.get('/users/me', response_model=schema.User)
-def read_current_user(current_user: schema.User = Depends(get_current_active_user), db: Session = Depends(get_db), access_token: Optional[str] = Cookie(None)):
-    user = auth.get_user(db=db, username=current_user.username)
-    if user is None:
-        raise HTTPException(status_code=404, detail='User not found')
+@app.get('/users/me')
+def read_current_user(user: User = Depends(auth.verify_token), db: Session = Depends(get_db)):
     return user
 
 # CRUD
 # Post Management
 @app.get('/posts/new', response_class=HTMLResponse)
-def new_post(request: Request, token: str = Depends(oauth2_scheme)):
+def new_post(request: Request, token: str = Depends(auth.oauth2_scheme)):
     return templates.TemplateResponse('create_post.html', {'request': request, 'title': 'New Post', 'current_user': 1})
 
 @app.post('/posts/new', response_model=schema.PostInfo)

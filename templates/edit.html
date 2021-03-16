@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div contenteditable id="editable-article-content">
+    {{ article_html | safe }}
+</div>
+{% endblock content %}
+
+{% block side_content %}
+<div id="editor-submit">
+    <button class="btn btn-primary" onclick="submitEdit();">Submit</button>
+    <script>
+        function submitEdit() {
+            let xhr = new XMLHttpRequest();
+            let data = document.getElementById("editable-article-content");
+            xhr.open("POST", "/edit/{{ tmp_id }}");
+            xhr.send(JSON.stringify({
+                "content": data.innerHTML
+            }));
+        };
+    </script>
+</div>
+{% endblock side_content %}

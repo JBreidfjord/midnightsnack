@@ -1,0 +1,732 @@
+
+    <p>After 7 years of fullstack development using Ruby, Python, and vanilla JavaScript, I'm now working mostly with JavaScript, Typescript, React, and Redux. The JavaScript community is great.. and really fast. Tons of things are created "overnight", figuratively, but sometimes literally. And it is really difficult to keep up to date.</p>
+<blockquote>
+  <p>Mental note: I always feel I'm late at the JavaScript party. And I want to be there. Even though I don't really like parties.</p>
+</blockquote>
+<p>1 year working with React and Redux and I feel I need to learn new things like Hooks and the Context API to manage state. After reading some articles about it, I wanted to try these concepts, so I created a simple project as a laboratory to experiment those things.</p>
+<p>Since I was a little boy, I'm passionated about Pokemon. It was a fun time playing Game Boy and conquering all the Leagues. Now, as a developer, I want to play around with the <a href="https://pokeapi.co/">Pokemon API</a>.</p>
+<p>So basically I wanted to build a simple web page that I could share data among pieces of this page. I thought: what if I build a page with three boxes:</p>
+<ul>
+<li>A box with the list of all existent pokemons</li>
+<li>A box with the list of all captured pokemons</li>
+<li>A box with an input to add new pokemons to the list</li>
+</ul>
+<p>And I can build behavior or actions to each box:</p>
+<ul>
+<li>For each pokemon in the first box, I can capture them and send to the second box</li>
+<li>For each pokemon in the second box, I can release them and send to the first box</li>
+<li>As a game god, I'm able to create pokemons by filling the input and send them to the first box</li>
+</ul>
+<p>Ok, it is clear to me all the features we need to implement here. Lists &amp; Actions. Let's begin!</p>
+<h2 id="listingpokemons">Listing Pokemons</h2>
+<p>The basic feature I wanted to build first was listing pokemons. So for an array of objects, I want to list and show the <code>name</code> attribute of each one. And that it.</p>
+<p>I'll start with the first box: the existent Pokemons. At first I thought, I don't need the Pokemon API, Let's just mock the list and see if it works. With <code>useState</code>, I can declare my component state and use it.</p>
+<p>We define it with a default value of a mock of Pokemons, just to test it.</p>
+<pre><code class="hljs objectivec"><span class="hljs-keyword">const</span> [pokemons] = useState([
+  { <span class="hljs-keyword">id</span>: <span class="hljs-number">1</span>, name: <span class="hljs-string">'Bulbasaur'</span> },
+  { <span class="hljs-keyword">id</span>: <span class="hljs-number">2</span>, name: <span class="hljs-string">'Charmander'</span> },
+  { <span class="hljs-keyword">id</span>: <span class="hljs-number">3</span>, name: <span class="hljs-string">'Squirtle'</span> }
+]);
+</code></pre>
+<p>Here we a list of three Pokemon objects. The <code>useState</code> hook provides a pair of items: the current state and a function to let you update this created state.</p>
+<p>Now with the pokemons state, we can map it and render the name of each one.</p>
+<pre><code class="hljs javascript">{pokemons.map(<span class="hljs-function">(<span class="hljs-params">pokemon</span>) =&gt;</span> <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>{pokemon.name}<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span></span>)}
+</code></pre>
+<p>It is just a map returning each Pokemon's name in a paragraph tag.</p>
+<p>This is the whole component implemented:</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">import</span> React, { useState } <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>;
+
+<span class="hljs-keyword">const</span> PokemonsList = <span class="hljs-function">() =&gt;</span> {
+  <span class="hljs-keyword">const</span> [pokemons] = useState([
+    { <span class="hljs-attr">id</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">'Bulbasaur'</span> },
+    { <span class="hljs-attr">id</span>: <span class="hljs-number">2</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">'Charmander'</span> },
+    { <span class="hljs-attr">id</span>: <span class="hljs-number">3</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">'Squirtle'</span> }
+  ]);
+
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">className</span>=<span class="hljs-string">"pokemons-list"</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">h2</span>&gt;</span>Pokemons List<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
+
+            {pokemons.map((pokemon) =&gt;
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">key</span>=<span class="hljs-string">{</span>`${<span class="hljs-attr">pokemon.id</span>}<span class="hljs-attr">-</span>${<span class="hljs-attr">pokemon.name</span>}`}&gt;</span>
+          <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>{pokemon.id}<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+          <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>{pokemon.name}<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>)}
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span>
+  )
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> PokemonsList;
+</code></pre>
+<p>Just a little tweak here:</p>
+<ul>
+<li>Added the <code>key</code> in a combination of the pokemon's <code>id</code> and <code>name</code></li>
+<li>And render a paragraph for the <code>id</code> attribute (I was just testing it. But we will remove it later)</li>
+</ul>
+<p>Great! Now we have the first list up and running.</p>
+<p>I want to make this same implementation but now for the captured pokemons. But for the captured pokemons, I want to make the as an empty list. Because when the "game" starts, I don't really have any captured Pokemons, right? Right!</p>
+<pre><code class="hljs cpp"><span class="hljs-keyword">const</span> [pokemons] = useState([]);
+</code></pre>
+<p>That's it, really simple!</p>
+<p>The whole component looks similar to the other:</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">import</span> React, { useState } <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>;
+
+<span class="hljs-keyword">const</span> CapturedPokemons = <span class="hljs-function">() =&gt;</span> {
+  <span class="hljs-keyword">const</span> [pokemons] = useState([]);
+
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">className</span>=<span class="hljs-string">"pokedex"</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">h2</span>&gt;</span>Captured Pokemons<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
+
+      {pokemons.map((pokemon) =&gt;
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">key</span>=<span class="hljs-string">{</span>`${<span class="hljs-attr">pokemon.id</span>}<span class="hljs-attr">-</span>${<span class="hljs-attr">pokemon.name</span>}`}&gt;</span>
+          <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>{pokemon.id}<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+          <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>{pokemon.name}<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>)}
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span>
+  )
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> CapturedPokemons;
+</code></pre>
+<p>Here we map, but as the array is empty, it doesn't render anything.</p>
+<p>Now that I have the two main components, I can get them together in the <code>App</code> component:</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">import</span> React <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'./App.css'</span>;
+
+<span class="hljs-keyword">import</span> PokemonsList <span class="hljs-keyword">from</span> <span class="hljs-string">'./PokemonsList'</span>;
+<span class="hljs-keyword">import</span> Pokedex <span class="hljs-keyword">from</span> <span class="hljs-string">'./Pokedex'</span>;
+
+<span class="hljs-keyword">const</span> App = <span class="hljs-function">() =&gt;</span> (
+  <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">className</span>=<span class="hljs-string">"App"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">PokemonsList</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">Pokedex</span> /&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span>
+);
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> App;
+</code></pre>
+<h2 id="capturingreleasing">Capturing &amp; Releasing</h2>
+<p>This is the second part of our app. We will capture and release Pokemons. So let's think of the expected behavior.</p>
+<p>For each Pokemon in the list of available Pokemons, I want to enable an action to capture them. The capture action will remove them from the list they were and add them into the list of captured Pokemons.</p>
+<p>The release action will have a similar behavior. But instead of moving from the available list to the captured list, it will be the reverse. We will move them from the captured list to the available list.</p>
+<p>So both boxes need to share data to be able to add the Pokemon to the other list. How we do this as the they are different components in the app? Let's talk about the React Context API.</p>
+<p>The Context API was designed to make a global data for a defined tree of React components. As the data is global, we can share it among components in this defined tree. So let's use it to share our simple Pokemon data between the two boxes.</p>
+<blockquote>
+  <p>Mental Note: "Context is primarily used when some data needs to be accessible by many components at different nesting levels." - React Docs.</p>
+</blockquote>
+<p>Using the API, we simply create a new context like that:</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">import</span> { createContext } <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>;
+
+<span class="hljs-keyword">const</span> PokemonContext = createContext();
+</code></pre>
+<p>Now, with the <code>PokemonContext</code>, we can use its provider. It will work as component wrapper of a tree of components. It provides the global data to these components and enable them to subscribe to any changes related to this context. It looks like this:</p>
+<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">PokemonContext.Provider</span> <span class="hljs-attr">value</span>=<span class="hljs-string">{/*</span> <span class="hljs-attr">some</span> <span class="hljs-attr">value</span> */}&gt;</span>
+</code></pre>
+<p>The <code>value</code> prop is just a value that this context provides to the wrapped components. What should we provide to the available and the captured lists?</p>
+<ul>
+<li><code>pokemons</code>: to list in the available list</li>
+<li><code>capturedPokemons</code>: to list in the captured list</li>
+<li><code>setPokemons</code>: to be able to update the available list</li>
+<li><code>setCapturedPokemons</code>: to be able to update the captured list</li>
+</ul>
+<p>As I mentioned before in the <code>useState</code> part, this hook always provide a pair: the state and a function to update this state. This function will the how we handle and update the context state. In other words, they are the <code>setPokemons</code> and <code>setCapturedPokemons</code>. How?</p>
+<pre><code class="hljs objectivec"><span class="hljs-keyword">const</span> [pokemons, setPokemons] = useState([
+  { <span class="hljs-keyword">id</span>: <span class="hljs-number">1</span>, name: <span class="hljs-string">'Bulbasaur'</span> },
+  { <span class="hljs-keyword">id</span>: <span class="hljs-number">2</span>, name: <span class="hljs-string">'Charmander'</span> },
+  { <span class="hljs-keyword">id</span>: <span class="hljs-number">3</span>, name: <span class="hljs-string">'Squirtle'</span> }
+]);
+</code></pre>
+<p>Now we have the <code>setPokemons</code>.</p>
+<pre><code class="hljs cpp"><span class="hljs-keyword">const</span> [capturedPokemons, setCapturedPokemons] = useState([]);
+</code></pre>
+<p>And now we also have the <code>setCapturedPokemons</code>.</p>
+<p>With all this values in hand, we can now pass them to the provider's <code>value</code> prop.</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">import</span> React, { createContext, useState } <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> PokemonContext = createContext();
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> PokemonProvider = <span class="hljs-function">(<span class="hljs-params">props</span>) =&gt;</span> {
+  <span class="hljs-keyword">const</span> [pokemons, setPokemons] = useState([
+    { <span class="hljs-attr">id</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">'Bulbasaur'</span> },
+    { <span class="hljs-attr">id</span>: <span class="hljs-number">2</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">'Charmander'</span> },
+    { <span class="hljs-attr">id</span>: <span class="hljs-number">3</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">'Squirtle'</span> }
+  ]);
+
+  <span class="hljs-keyword">const</span> [capturedPokemons, setCapturedPokemons] = useState([]);
+
+  <span class="hljs-keyword">const</span> providerValue = {
+    pokemons,
+    setPokemons,
+    capturedPokemons,
+    setCapturedPokemons
+  };
+
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">PokemonContext.Provider</span> <span class="hljs-attr">value</span>=<span class="hljs-string">{providerValue}</span>&gt;</span>
+      {props.children}
+    <span class="hljs-tag">&lt;/<span class="hljs-name">PokemonContext.Provider</span>&gt;</span></span>
+  )
+};
+</code></pre>
+<p>I created a <code>PokemonProvider</code> to wrap all these data and APIs to create the context and return the context provider with the defined value.</p>
+<p>But how do we provide these data and APIs to the component? We need to do two main things:</p>
+<ul>
+<li>Wrap the components into this context provider</li>
+<li>Use the context in each component</li>
+</ul>
+<p>Let's wrap them first:</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> App = <span class="hljs-function">() =&gt;</span> (
+  <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">PokemonProvider</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">className</span>=<span class="hljs-string">"App"</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">PokemonsList</span> /&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">Pokedex</span> /&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">PokemonProvider</span>&gt;</span></span>
+);
+</code></pre>
+<p>And we use the context by using the <code>useContext</code> and passing the created <code>PokemonContext</code>. Like this:</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">import</span> { useContext } <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>;
+<span class="hljs-keyword">import</span> { PokemonContext } <span class="hljs-keyword">from</span> <span class="hljs-string">'./PokemonContext'</span>;
+
+useContext(PokemonContext); <span class="hljs-comment">// returns the context provider value we created</span>
+</code></pre>
+<p>For the available pokemons, we want to capture them, so it would be useful to have the <code>setCapturedPokemons</code> function API to update the captured pokemons. As the pokemon is captured, we need to remove it from the available list. <code>setPokemons</code> is also needed here. And to update each list, we need the current data. So basically we need everything from the context provider.</p>
+<p>We need to build a button with an action to capture the pokemon:</p>
+<ul>
+<li><p><code>&lt;button&gt;</code> tag with an <code>onClick</code> calling the <code>capture</code> function and passing the Pokemon</p>
+<p><button onclick="{capture(pokemon)}">+</button></p></li>
+<li><p>The <code>capture</code> function will update the <code>pokemons</code> and the <code>capturedPokemons</code> lists</p>
+<p>const capture = (pokemon) =&gt; (event) =&gt; {
+  // update captured pokemons list
+  // update available pokemons list
+};</p></li>
+</ul>
+<p>To update the <code>capturedPokemons</code>, we can just call the <code>setCapturedPokemons</code> function with the current <code>capturedPokemons</code> and the pokemon to be capture.</p>
+<pre><code class="hljs css">setCapturedPokemons(<span class="hljs-selector-attr">[...capturedPokemons, pokemon]</span>);
+</code></pre>
+<p>And to update the <code>pokemons</code> list, just filter the pokemon that will be captured.</p>
+<pre><code class="hljs less"><span class="hljs-selector-tag">setPokemons</span>(removePokemonFromList(pokemon));
+</code></pre>
+<p><code>removePokemonFromList</code> is just a simple function to filter the pokemons by removing the captured pokemon.</p>
+<pre><code class="hljs coffeescript">const removePokemonFromList = <span class="hljs-function"><span class="hljs-params">(removedPokemon)</span> =&gt;</span>
+  pokemons.filter(<span class="hljs-function"><span class="hljs-params">(pokemon)</span> =&gt;</span> pokemon !== removedPokemon)
+</code></pre>
+<p>How does the component looks like now?</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">import</span> React, { useContext } <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>;
+<span class="hljs-keyword">import</span> { PokemonContext } <span class="hljs-keyword">from</span> <span class="hljs-string">'./PokemonContext'</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> PokemonsList = <span class="hljs-function">() =&gt;</span> {
+  <span class="hljs-keyword">const</span> {
+    pokemons,
+    setPokemons,
+    capturedPokemons,
+    setCapturedPokemons
+  } = useContext(PokemonContext);
+
+  <span class="hljs-keyword">const</span> removePokemonFromList = <span class="hljs-function">(<span class="hljs-params">removedPokemon</span>) =&gt;</span>
+    pokemons.filter(<span class="hljs-function"><span class="hljs-params">pokemon</span> =&gt;</span> pokemon !== removedPokemon);
+
+  <span class="hljs-keyword">const</span> capture = <span class="hljs-function">(<span class="hljs-params">pokemon</span>) =&gt;</span> <span class="hljs-function">() =&gt;</span> {
+    setCapturedPokemons([...capturedPokemons, pokemon]);
+    setPokemons(removePokemonFromList(pokemon));
+  };
+
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">className</span>=<span class="hljs-string">"pokemons-list"</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">h2</span>&gt;</span>Pokemons List<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
+
+      {pokemons.map((pokemon) =&gt;
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">key</span>=<span class="hljs-string">{</span>`${<span class="hljs-attr">pokemon.id</span>}<span class="hljs-attr">-</span>${<span class="hljs-attr">pokemon.name</span>}`}&gt;</span>
+          <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>{pokemon.name}<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{capture(pokemon)}</span>&gt;</span>+<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+          <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>)}
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span>
+  );
+};
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> PokemonsList;
+</code></pre>
+<p>It will look very similar for the captured pokemons component. Instead of <code>capture</code>, it will be a <code>release</code> function:</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">import</span> React, { useContext } <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>;
+<span class="hljs-keyword">import</span> { PokemonContext } <span class="hljs-keyword">from</span> <span class="hljs-string">'./PokemonContext'</span>;
+
+<span class="hljs-keyword">const</span> CapturedPokemons = <span class="hljs-function">() =&gt;</span> {
+  <span class="hljs-keyword">const</span> {
+    pokemons,
+    setPokemons,
+    capturedPokemons,
+    setCapturedPokemons,
+  } = useContext(PokemonContext);
+
+  <span class="hljs-keyword">const</span> releasePokemon = <span class="hljs-function">(<span class="hljs-params">releasedPokemon</span>) =&gt;</span>
+    capturedPokemons.filter(<span class="hljs-function">(<span class="hljs-params">pokemon</span>) =&gt;</span> pokemon !== releasedPokemon);
+
+  <span class="hljs-keyword">const</span> release = <span class="hljs-function">(<span class="hljs-params">pokemon</span>) =&gt;</span> <span class="hljs-function">() =&gt;</span> {
+    setCapturedPokemons(releasePokemon(pokemon));
+    setPokemons([...pokemons, pokemon]);
+  };
+
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">className</span>=<span class="hljs-string">"captured-pokemons"</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">h2</span>&gt;</span>CapturedPokemons<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
+
+      {capturedPokemons.map((pokemon) =&gt;
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">key</span>=<span class="hljs-string">{</span>`${<span class="hljs-attr">pokemon.id</span>}<span class="hljs-attr">-</span>${<span class="hljs-attr">pokemon.name</span>}`}&gt;</span>
+          <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>{pokemon.name}<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{release(pokemon)}</span>&gt;</span>-<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+          <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>)}
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span>
+  );
+};
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> CapturedPokemons;
+</code></pre>
+<h2 id="reducingthecomplexity">Reducing the complexity</h2>
+<p>Now we use the <code>useState</code>, the Context API, context provider, the <code>useContext</code>. And more importantly, we can share data between Pokemon boxes.</p>
+<p>Another way to manage state is using <code>useReducer</code> as an alternative for <code>useState</code>.</p>
+<p>The reducer lifecycle works like this: the <code>useReducer</code> provides a <code>dispatch</code> function. With this function, we can dispatch an <code>action</code> inside a component. The <code>reducer</code> receives the action and the state. It understands the type of the action, handle the data, and return a new state. Now, new state can be used in the component.</p>
+<p>As an exercise and to have a better understanding of this hook, I tried to replace the <code>useState</code> with it.</p>
+<p>The <code>useState</code> was inside the <code>PokemonProvider</code>. We can redefine the initial state for the available and the captured pokemons in this data structure:</p>
+<pre><code class="hljs yaml"><span class="hljs-string">const</span> <span class="hljs-string">defaultState</span> <span class="hljs-string">=</span> {
+  <span class="hljs-attr">pokemons:</span> [
+    { <span class="hljs-attr">id:</span> <span class="hljs-number">1</span>, <span class="hljs-attr">name:</span> <span class="hljs-string">'Bulbasaur'</span> },
+    { <span class="hljs-attr">id:</span> <span class="hljs-number">2</span>, <span class="hljs-attr">name:</span> <span class="hljs-string">'Charmander'</span> },
+    { <span class="hljs-attr">id:</span> <span class="hljs-number">3</span>, <span class="hljs-attr">name:</span> <span class="hljs-string">'Squirtle'</span> }
+  ],
+  <span class="hljs-attr">capturedPokemons:</span> []
+}<span class="hljs-string">;</span>
+</code></pre>
+<p>And pass this value to the <code>useReducer</code>:</p>
+<pre><code class="hljs cpp"><span class="hljs-keyword">const</span> [state, dispatch] = useReducer(pokemonReducer, defaultState);
+</code></pre>
+<p>The <code>useReducer</code> receives two parameters: the reducer and the initial state. Let's build the <code>pokemonReducer</code> now.</p>
+<p>The reducer receives the current state and the action that was dispatched.</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> pokemonReducer = <span class="hljs-function">(<span class="hljs-params">state, action</span>) =&gt;</span> <span class="hljs-comment">// returns the new state based on the action type</span>
+</code></pre>
+<p>Here we get the action type and return a new state. The action is an object. It looks like this:</p>
+<pre><code class="hljs bash">{ <span class="hljs-built_in">type</span>: <span class="hljs-string">'AN_ACTION_TYPE'</span> }
+</code></pre>
+<p>But could also be bigger:</p>
+<pre><code class="hljs bash">{
+  <span class="hljs-built_in">type</span>: <span class="hljs-string">'AN_ACTION_TYPE'</span>,
+  pokemon: {
+    name: <span class="hljs-string">'Pikachu'</span>
+  }
+}
+</code></pre>
+<p>This is the case, we pass a Pokemon to the action object. Let's pause for a minute and think about what we want to do inside the reducer.</p>
+<p>Here, we usually update data and handle actions. Actions are dispatched. So actions are behavior. And the behavior from our app are: capture and release! These are the action we need to handle here.</p>
+<p>This is what our reducer will look like:</p>
+<pre><code class="hljs coffeescript">const pokemonReducer = <span class="hljs-function"><span class="hljs-params">(state, action)</span> =&gt;</span> {
+  <span class="hljs-keyword">switch</span> (action.type) {
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'CAPTURE'</span>:
+      <span class="hljs-regexp">//</span> handle capture <span class="hljs-keyword">and</span> <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> state
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'RELEASE'</span>:
+      <span class="hljs-regexp">//</span> handle release <span class="hljs-keyword">and</span> <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> state
+    default:
+      <span class="hljs-keyword">return</span> state;
+  }
+};
+</code></pre>
+<p>If our action has a type <code>CAPTURE</code>, we handle in one way. If our action type is the <code>RELEASE</code>, we handle it in another way. If the action type doesn't match the any these types, just return the current state.</p>
+<p>When we capture the pokemon, we need to update both lists: remove the pokemon from the available list and add it to the captured list. This state is what we need to return from the reducer.</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> getPokemonsList = <span class="hljs-function">(<span class="hljs-params">pokemons, capturedPokemon</span>) =&gt;</span>
+  pokemons.filter(<span class="hljs-function"><span class="hljs-params">pokemon</span> =&gt;</span> pokemon !== capturedPokemon)
+
+<span class="hljs-keyword">const</span> capturePokemon = <span class="hljs-function">(<span class="hljs-params">pokemon, state</span>) =&gt;</span> ({
+  <span class="hljs-attr">pokemons</span>: getPokemonsList(state.pokemons, pokemon),
+  <span class="hljs-attr">capturedPokemons</span>: [...state.capturedPokemons, pokemon]
+});
+</code></pre>
+<p>The <code>capturePokemon</code> function just returns the updated lists. The <code>getPokemonsList</code> remove the captured pokemon from the available list.</p>
+<p>And we use this new function in the reducer:</p>
+<pre><code class="hljs coffeescript">const pokemonReducer = <span class="hljs-function"><span class="hljs-params">(state, action)</span> =&gt;</span> {
+  <span class="hljs-keyword">switch</span> (action.type) {
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'CAPTURE'</span>:
+      <span class="hljs-keyword">return</span> capturePokemon(action.pokemon, state);
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'RELEASE'</span>:
+      <span class="hljs-regexp">//</span> handle release <span class="hljs-keyword">and</span> <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> state
+    default:
+      <span class="hljs-keyword">return</span> state;
+  }
+};
+</code></pre>
+<p>Now the <code>release</code> function!</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> getCapturedPokemons = <span class="hljs-function">(<span class="hljs-params">capturedPokemons, releasedPokemon</span>) =&gt;</span>
+  capturedPokemons.filter(<span class="hljs-function"><span class="hljs-params">pokemon</span> =&gt;</span> pokemon !== releasedPokemon)
+
+<span class="hljs-keyword">const</span> releasePokemon = <span class="hljs-function">(<span class="hljs-params">releasedPokemon, state</span>) =&gt;</span> ({
+  <span class="hljs-attr">pokemons</span>: [...state.pokemons, releasedPokemon],
+  <span class="hljs-attr">capturedPokemons</span>: getCapturedPokemons(state.capturedPokemons, releasedPokemon)
+});
+</code></pre>
+<p>The <code>getCapturedPokemons</code> remove the released pokemon from the captured list. The <code>releasePokemon</code> function returns the updated lists.</p>
+<p>Our reducer looks like this now:</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> pokemonReducer = <span class="hljs-function">(<span class="hljs-params">state, action</span>) =&gt;</span> {
+  <span class="hljs-keyword">switch</span> (action.type) {
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'CAPTURE'</span>:
+      <span class="hljs-keyword">return</span> capturePokemon(action.pokemon, state);
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'RELEASE'</span>:
+      <span class="hljs-keyword">return</span> releasePokemon(action.pokemon, state);
+    <span class="hljs-keyword">default</span>:
+      <span class="hljs-keyword">return</span> state;
+  }
+};
+</code></pre>
+<p>Just one minor refactor: action types! These are strings and we can extract them into a constant and provide for the dispatcher.</p>
+<pre><code class="hljs objectivec"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-built_in">CAPTURE</span> = <span class="hljs-string">'CAPTURE'</span>;
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> RELEASE = <span class="hljs-string">'RELEASE'</span>;
+</code></pre>
+<p>And the reducer:</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> pokemonReducer = <span class="hljs-function">(<span class="hljs-params">state, action</span>) =&gt;</span> {
+  <span class="hljs-keyword">switch</span> (action.type) {
+    <span class="hljs-keyword">case</span> CAPTURE:
+      <span class="hljs-keyword">return</span> capturePokemon(action.pokemon, state);
+    <span class="hljs-keyword">case</span> RELEASE:
+      <span class="hljs-keyword">return</span> releasePokemon(action.pokemon, state);
+    <span class="hljs-keyword">default</span>:
+      <span class="hljs-keyword">return</span> state;
+  }
+};
+</code></pre>
+<p>The entire reducer file looks like this:</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> CAPTURE = <span class="hljs-string">'CAPTURE'</span>;
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> RELEASE = <span class="hljs-string">'RELEASE'</span>;
+
+<span class="hljs-keyword">const</span> getCapturedPokemons = <span class="hljs-function">(<span class="hljs-params">capturedPokemons, releasedPokemon</span>) =&gt;</span>
+  capturedPokemons.filter(<span class="hljs-function"><span class="hljs-params">pokemon</span> =&gt;</span> pokemon !== releasedPokemon)
+
+<span class="hljs-keyword">const</span> releasePokemon = <span class="hljs-function">(<span class="hljs-params">releasedPokemon, state</span>) =&gt;</span> ({
+  <span class="hljs-attr">pokemons</span>: [...state.pokemons, releasedPokemon],
+  <span class="hljs-attr">capturedPokemons</span>: getCapturedPokemons(state.capturedPokemons, releasedPokemon)
+});
+
+<span class="hljs-keyword">const</span> getPokemonsList = <span class="hljs-function">(<span class="hljs-params">pokemons, capturedPokemon</span>) =&gt;</span>
+  pokemons.filter(<span class="hljs-function"><span class="hljs-params">pokemon</span> =&gt;</span> pokemon !== capturedPokemon)
+
+<span class="hljs-keyword">const</span> capturePokemon = <span class="hljs-function">(<span class="hljs-params">pokemon, state</span>) =&gt;</span> ({
+  <span class="hljs-attr">pokemons</span>: getPokemonsList(state.pokemons, pokemon),
+  <span class="hljs-attr">capturedPokemons</span>: [...state.capturedPokemons, pokemon]
+});
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> pokemonReducer = <span class="hljs-function">(<span class="hljs-params">state, action</span>) =&gt;</span> {
+  <span class="hljs-keyword">switch</span> (action.type) {
+    <span class="hljs-keyword">case</span> CAPTURE:
+      <span class="hljs-keyword">return</span> capturePokemon(action.pokemon, state);
+    <span class="hljs-keyword">case</span> RELEASE:
+      <span class="hljs-keyword">return</span> releasePokemon(action.pokemon, state);
+    <span class="hljs-keyword">default</span>:
+      <span class="hljs-keyword">return</span> state;
+  }
+};
+</code></pre>
+<p>As the reducer is now implemented, we can import it into our provider and use it in the <code>useReducer</code> hook.</p>
+<pre><code class="hljs cpp"><span class="hljs-keyword">const</span> [state, dispatch] = useReducer(pokemonReducer, defaultState);
+</code></pre>
+<p>As we are inside the <code>PokemonProvider</code>, we want to provide some value to the consuming components: the capture and release actions.</p>
+<p>These functions just need to dispatch the correct action type and pass the pokemon to the reducer.</p>
+<ul>
+<li><p>The <code>capture</code> function: it receives the pokemon and return a new function that dispatches an action with the type <code>CAPTURE</code> and the captured pokemon.</p>
+<p>const capture = (pokemon) =&gt; () =&gt; {
+  dispatch({ type: CAPTURE, pokemon });
+};</p></li>
+<li><p>The <code>release</code> function: it receives the pokemon and return a new function that dispatches an action with the type <code>RELEASE</code> and the release pokemon.</p>
+<p>const release = (pokemon) =&gt; () =&gt; {
+  dispatch({ type: RELEASE, pokemon });
+};</p></li>
+</ul>
+<p>Now with the state and the actions implemented, we can provide these values to the consuming components. Just update the provider value prop.</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> { pokemons, capturedPokemons } = state;
+
+<span class="hljs-keyword">const</span> providerValue = {
+  pokemons,
+  capturedPokemons,
+  release,
+  capture
+};
+
+<span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">PokemonContext.Provider</span> <span class="hljs-attr">value</span>=<span class="hljs-string">{providerValue}</span>&gt;</span>
+  {props.children}
+<span class="hljs-tag">&lt;/<span class="hljs-name">PokemonContext.Provider</span>&gt;</span></span>
+</code></pre>
+<p>Great! Now back to the component. Let's use this new actions. All the capture and release logics are encapsulated in our provider and reducer. Our component is pretty clean now. The <code>useContext</code> will look like this:</p>
+<pre><code class="hljs cpp"><span class="hljs-keyword">const</span> { pokemons, capture } = useContext(PokemonContext);
+</code></pre>
+<p>And the whole component:</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">import</span> React, { useContext } <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>;
+<span class="hljs-keyword">import</span> { PokemonContext } <span class="hljs-keyword">from</span> <span class="hljs-string">'./PokemonContext'</span>;
+
+<span class="hljs-keyword">const</span> PokemonsList = <span class="hljs-function">() =&gt;</span> {
+  <span class="hljs-keyword">const</span> { pokemons, capture } = useContext(PokemonContext);
+
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">className</span>=<span class="hljs-string">"pokemons-list"</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">h2</span>&gt;</span>Pokemons List<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
+
+      {pokemons.map((pokemon) =&gt;
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">key</span>=<span class="hljs-string">{</span>`${<span class="hljs-attr">pokemon.id</span>}<span class="hljs-attr">-</span>${<span class="hljs-attr">pokemon.name</span>}`}&gt;</span>
+          <span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>{pokemon.name}<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+          <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{capture(pokemon)}</span>&gt;</span>+<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>)}
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span>
+  )
+};
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> PokemonsList;
+</code></pre>
+<p>For the captured pokemons component, it will look the very similar. The <code>useContext</code>:</p>
+<pre><code class="hljs cpp"><span class="hljs-keyword">const</span> { capturedPokemons, release } = useContext(PokemonContext);
+</code></pre>
+<p>And the whole component:</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">import</span> React, { useContext } <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>;
+<span class="hljs-keyword">import</span> { PokemonContext } <span class="hljs-keyword">from</span> <span class="hljs-string">'./PokemonContext'</span>;
+
+<span class="hljs-keyword">const</span> Pokedex = <span class="hljs-function">() =&gt;</span> {
+  <span class="hljs-keyword">const</span> { capturedPokemons, release } = useContext(PokemonContext);
+
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">className</span>=<span class="hljs-string">"pokedex"</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">h2</span>&gt;</span>Pokedex<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
+
+      {capturedPokemons.map((pokemon) =&gt;
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">key</span>=<span class="hljs-string">{</span>`${<span class="hljs-attr">pokemon.id</span>}<span class="hljs-attr">-</span>${<span class="hljs-attr">pokemon.name</span>}`}&gt;</span>
+          <span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>{pokemon.name}<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+          <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{release(pokemon)}</span>&gt;</span>-<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>)}
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span>
+  )
+};
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> Pokedex;
+</code></pre>
+<p>No logic. Just UI. Very clean.</p>
+<h2 id="pokemongodthecreator">Pokemon God: The Creator</h2>
+<p>Now that we have the communication between the two lists, I want to build a third box. This will how we create new Pokemons. But it is just a simple input and submit button. When we add a pokemon name into the input and press the button, it will dispatch an action to add this pokemon to the available list.</p>
+<p>As we need to access the available list to update it, we need to share state. So our component will be wrapped by our <code>PokemonProvider</code> together with the other components.</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> App = <span class="hljs-function">() =&gt;</span> (
+  <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">PokemonProvider</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">className</span>=<span class="hljs-string">"main"</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">PokemonsList</span> /&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">Pokedex</span> /&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">PokemonForm</span> /&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">PokemonProvider</span>&gt;</span></span>
+);
+</code></pre>
+<p>Let's build the <code>PokemonForm</code> component now. The form is pretty straightforward:</p>
+<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">form</span> <span class="hljs-attr">onSubmit</span>=<span class="hljs-string">{handleFormSubmit}</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text"</span> <span class="hljs-attr">placeholder</span>=<span class="hljs-string">"pokemon name"</span> <span class="hljs-attr">onChange</span>=<span class="hljs-string">{handleNameOnChange}</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"submit"</span> <span class="hljs-attr">value</span>=<span class="hljs-string">"Add"</span> /&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">form</span>&gt;</span>
+</code></pre>
+<p>We have a form, an input, and a button. To sum up, we also have a function to handle the form submit and another function to handle the input on change.</p>
+<p>The <code>handleNameOnChange</code> will be called everytime the user type or remove a character. I wanted to build a local state, a representation of the pokemon name. With this state, we can use to dispatch when submitting the form.</p>
+<p>As we want to try hooks, we will use <code>useState</code> to handle this local state.</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> [pokemonName, setPokemonName] = useState();
+
+<span class="hljs-keyword">const</span> handleNameOnChange = <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> setPokemonName(e.target.value);
+</code></pre>
+<p>We use the <code>setPokemonName</code> to update the <code>pokemonName</code> everytime the use interacts with the input.</p>
+<p>And the <code>handleFormSubmit</code> is a function to dispatch the new pokemon to be added to the available list.</p>
+<pre><code class="hljs coffeescript">const handleFormSubmit = <span class="hljs-function"><span class="hljs-params">(e)</span> =&gt;</span> {
+  e.preventDefault();
+  addPokemon({
+    id: generateID(),
+    name: pokemonName
+  });
+};
+</code></pre>
+<p>The <code>addPokemon</code> is the API we will build later. It receives the pokemon: an id and name. The name is the local state we defined: <code>pokemonName</code>.</p>
+<p>The <code>generateID</code> is just a simple function I built to generate a random number. It looks like this:</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> generateID = <span class="hljs-function">() =&gt;</span> {
+  <span class="hljs-keyword">const</span> a = <span class="hljs-built_in">Math</span>
+    .random()
+    .toString(<span class="hljs-number">36</span>)
+    .substring(<span class="hljs-number">2</span>, <span class="hljs-number">15</span>)
+
+  <span class="hljs-keyword">const</span> b = <span class="hljs-built_in">Math</span>
+    .random()
+    .toString(<span class="hljs-number">36</span>)
+    .substring(<span class="hljs-number">2</span>, <span class="hljs-number">15</span>)
+
+  <span class="hljs-keyword">return</span> a + b;
+};
+</code></pre>
+<p>The <code>addPokemon</code> will be provided by the context api we build. That way, this function can receive the new Pokemon and add to the available list. It looks like this:</p>
+<pre><code class="hljs coffeescript">const addPokemon = <span class="hljs-function"><span class="hljs-params">(pokemon)</span> =&gt;</span> {
+  dispatch({ type: ADD_POKEMON, pokemon });
+};
+</code></pre>
+<p>It will dispatch this action type <code>ADD_POKEMON</code> and also pass the Pokemon.</p>
+<p>In our reducer, we add the case for the <code>ADD_POKEMON</code> and handle the state to add the new pokemon to state.</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> pokemonReducer = <span class="hljs-function">(<span class="hljs-params">state, action</span>) =&gt;</span> {
+  <span class="hljs-keyword">switch</span> (action.type) {
+    <span class="hljs-keyword">case</span> CAPTURE:
+      <span class="hljs-keyword">return</span> capturePokemon(action.pokemon, state);
+    <span class="hljs-keyword">case</span> RELEASE:
+      <span class="hljs-keyword">return</span> releasePokemon(action.pokemon, state);
+    <span class="hljs-keyword">case</span> ADD_POKEMON:
+      <span class="hljs-keyword">return</span> addPokemon(action.pokemon, state);
+    <span class="hljs-keyword">default</span>:
+      <span class="hljs-keyword">return</span> state;
+  }
+};
+</code></pre>
+<p>And the <code>addPokemon</code> function will be:</p>
+<pre><code class="hljs coffeescript">const addPokemon = <span class="hljs-function"><span class="hljs-params">(pokemon, state)</span> =&gt;</span> ({
+  pokemons: [...state.pokemons, pokemon],
+  capturedPokemons: state.capturedPokemons
+});
+</code></pre>
+<p>Another approach is to destructure the state and change only the pokemons attribute. Like this:</p>
+<pre><code class="hljs coffeescript">const addPokemon = <span class="hljs-function"><span class="hljs-params">(pokemon, state)</span> =&gt;</span> ({
+  ...state,
+  pokemons: [...state.pokemons, pokemon],
+});
+</code></pre>
+<p>Back to our component, we just need to make the <code>useContext</code> provides the <code>addPokemon</code> dispatch API based on the <code>PokemonContext</code>:</p>
+<pre><code class="hljs nginx"><span class="hljs-section">const</span> { <span class="hljs-attribute">addPokemon</span> } = useContext(PokemonContext);
+</code></pre>
+<p>And the whole component looks like this:</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">import</span> React, { useContext, useState } <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>;
+<span class="hljs-keyword">import</span> { PokemonContext } <span class="hljs-keyword">from</span> <span class="hljs-string">'./PokemonContext'</span>;
+<span class="hljs-keyword">import</span> { generateID } <span class="hljs-keyword">from</span> <span class="hljs-string">'./utils'</span>;
+
+<span class="hljs-keyword">const</span> PokemonForm = <span class="hljs-function">() =&gt;</span> {
+  <span class="hljs-keyword">const</span> [pokemonName, setPokemonName] = useState();
+  <span class="hljs-keyword">const</span> { addPokemon } = useContext(PokemonContext);
+
+  <span class="hljs-keyword">const</span> handleNameOnChange = <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> setPokemonName(e.target.value);
+
+  <span class="hljs-keyword">const</span> handleFormSubmit = <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
+    e.preventDefault();
+    addPokemon({
+      <span class="hljs-attr">id</span>: generateID(),
+      <span class="hljs-attr">name</span>: pokemonName
+    });
+  };
+
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">form</span> <span class="hljs-attr">onSubmit</span>=<span class="hljs-string">{handleFormSubmit}</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text"</span> <span class="hljs-attr">placeholder</span>=<span class="hljs-string">"pokemon name"</span> <span class="hljs-attr">onChange</span>=<span class="hljs-string">{handleNameOnChange}</span> /&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"submit"</span> <span class="hljs-attr">value</span>=<span class="hljs-string">"Add"</span> /&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">form</span>&gt;</span></span>
+  );
+};
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> PokemonForm;
+</code></pre>
+<p>Now we have the available pokemons list, the captured pokemons list, and the third box to create new pokemons.</p>
+<h2 id="pokemoneffects">Pokemon Effects</h2>
+<p>Now that we have our app almost complete, we can replace the mocked pokemons with a list of pokemons from the PokeAPI.</p>
+<p>So, inside the function component, we can't really do side effects like loggin or subscriptions. This is why the <code>useEffect</code> hook exists. With this hook, we can fetch pokemons (a side-effect), and add to the list.</p>
+<p>Fetching the PokeAPI will look like this:</p>
+<pre><code class="hljs csharp"><span class="hljs-keyword">const</span> url = <span class="hljs-string">"https://pokeapi.co/api/v2/pokemon"</span>;
+<span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> fetch(url);
+<span class="hljs-keyword">const</span> data = <span class="hljs-keyword">await</span> response.json();
+data.results; <span class="hljs-comment">// [{ name: 'bulbasaur', url: 'https://pokeapi.co/api/v2/pokemon/1/' }, ...]</span>
+</code></pre>
+<p>The <code>results</code> attribute is the list of fetched pokemons. With this data, we will be able to add to the pokemons list.</p>
+<p>Let's get the request code inside the <code>useEffect</code>:</p>
+<pre><code class="hljs javascript">useEffect(<span class="hljs-function">() =&gt;</span> {
+  <span class="hljs-keyword">const</span> fetchPokemons = <span class="hljs-keyword">async</span> () =&gt; {
+    <span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> fetch(url);
+    <span class="hljs-keyword">const</span> data = <span class="hljs-keyword">await</span> response.json();
+    data.results; <span class="hljs-comment">// update the pokemons list with this data</span>
+  };
+
+  fetchPokemons();
+}, []);
+</code></pre>
+<p>To be able to the <code>async-await</code>, we need to create a function and call it later. The empty array is a parameter to make the <code>useEffect</code> knows the dependencies it will look up to re-run.</p>
+<p>The default behavior is to run the effect every completed render. If we add a dependency to this list, the <code>useEffect</code> will only re-run when the dependency changes, instead of running in all completed renders.</p>
+<p>Now, that we fetched the pokemons, we need to update the list. It's an action, a new behavior. We need to use the dispatch again, implement a new type in the reducer, and update the state in the context provider.</p>
+<p>In the <code>PokemonContext</code>, we create the <code>addPokemons</code> function to provide an API to the consuming component uses it.</p>
+<pre><code class="hljs coffeescript">const addPokemons = <span class="hljs-function"><span class="hljs-params">(pokemons)</span> =&gt;</span> {
+  dispatch({ type: ADD_POKEMONS, pokemons });
+};
+</code></pre>
+<p>It receives pokemons and dispatches a new action: <code>ADD_POKEMONS</code>.</p>
+<p>At the reducer, we add this new type, expect the pokemons, and call a function to add the pokemons to the available list state.</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> pokemonReducer = <span class="hljs-function">(<span class="hljs-params">state, action</span>) =&gt;</span> {
+  <span class="hljs-keyword">switch</span> (action.type) {
+    <span class="hljs-keyword">case</span> CAPTURE:
+      <span class="hljs-keyword">return</span> capturePokemon(action.pokemon, state);
+    <span class="hljs-keyword">case</span> RELEASE:
+      <span class="hljs-keyword">return</span> releasePokemon(action.pokemon, state);
+    <span class="hljs-keyword">case</span> ADD_POKEMON:
+      <span class="hljs-keyword">return</span> addPokemon(action.pokemon, state);
+    <span class="hljs-keyword">case</span> ADD_POKEMONS:
+      <span class="hljs-keyword">return</span> addPokemons(action.pokemons, state);
+    <span class="hljs-keyword">default</span>:
+      <span class="hljs-keyword">return</span> state;
+  }
+};
+</code></pre>
+<p>The <code>addPokemons</code> function just add the pokemons to the list:</p>
+<pre><code class="hljs coffeescript">const addPokemons = <span class="hljs-function"><span class="hljs-params">(pokemons, state)</span> =&gt;</span> ({
+  pokemons: pokemons,
+  capturedPokemons: state.capturedPokemons
+});
+</code></pre>
+<p>We can refactor this by doing a state destructuring and the object property value shorthand:</p>
+<pre><code class="hljs coffeescript">const addPokemons = <span class="hljs-function"><span class="hljs-params">(pokemons, state)</span> =&gt;</span> ({
+  ...state,
+  pokemons,
+});
+</code></pre>
+<p>As we provide this function API to the consuming component now, we can use the <code>useContext</code> to get it.</p>
+<pre><code class="hljs nginx"><span class="hljs-section">const</span> { <span class="hljs-attribute">addPokemons</span> } = useContext(PokemonContext);
+</code></pre>
+<p>The whole component looks like this:</p>
+<pre><code class="hljs javascript"><span class="hljs-keyword">import</span> React, { useContext, useEffect } <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>;
+<span class="hljs-keyword">import</span> { PokemonContext } <span class="hljs-keyword">from</span> <span class="hljs-string">'./PokemonContext'</span>;
+
+<span class="hljs-keyword">const</span> url = <span class="hljs-string">"https://pokeapi.co/api/v2/pokemon"</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> PokemonsList = <span class="hljs-function">() =&gt;</span> {
+  <span class="hljs-keyword">const</span> { state, capture, addPokemons } = useContext(PokemonContext);
+
+  useEffect(<span class="hljs-function">() =&gt;</span> {
+    <span class="hljs-keyword">const</span> fetchPokemons = <span class="hljs-keyword">async</span> () =&gt; {
+      <span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> fetch(url);
+      <span class="hljs-keyword">const</span> data = <span class="hljs-keyword">await</span> response.json();
+      addPokemons(data.results);
+    };
+
+    fetchPokemons();
+  }, [addPokemons]);
+
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">className</span>=<span class="hljs-string">"pokemons-list"</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">h2</span>&gt;</span>Pokemons List<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
+
+      {state.pokemons.map((pokemon) =&gt;
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">key</span>=<span class="hljs-string">{pokemon.name}</span>&gt;</span>
+          <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>{pokemon.name}<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{capture(pokemon)}</span>&gt;</span>+<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+          <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>)}
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span>
+  );
+};
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> PokemonsList;
+</code></pre>
+<h2 id="wrappingup">Wrapping up</h2>
+<p>This was my attempt to share my learnings and experience while trying hooks in a mini side-project. We learned how to handle local state with <code>useState</code>, building a global state with the <code>Context API</code>, how to rewrite and replace the <code>useState</code> with <code>useReducer</code>, and doing side-effects within the <code>useEffect</code>.</p>
+<blockquote>
+  <p>Disclaimer: it was just an experimental project. Just for learning purpose. I don't have the answer about Hooks good practices or how to make it scalable in big projects.</p>
+</blockquote>
+<p>I hope it was a good reading! Keep learning and coding!</p>
+<h2 id="resources">Resources</h2>
+<ul>
+<li><a href="https://reactjs.org/docs/context.html">React Docs: Context</a></li>
+<li><a href="https://reactjs.org/docs/hooks-reference.html">React Docs: Hooks</a></li>
+</ul>

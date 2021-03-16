@@ -60,3 +60,19 @@ New features:
 
 Admin Page:
     ☐ Permissions setting page to allow me to change a user's permissions
+
+MD-HTML:
+    ☐ Input validation on file, must be a .md file
+    ☐ Input validation on form
+    ☐ Input validation on data from json file
+
+Post Editor:
+    ☐ Edit button instead of submit
+    Edit:
+        ☐ onClick: convert html to markdown with turndown
+        ☐ Display markdown and allow editing
+        ☐ Wrap markdown in <pre><code> blocks to have highlightjs help format the markdown
+    ☐ Edit button replaced with submit
+    ☐ onSubmit: send markdown to normal /edit route, starts the process over
+
+    ☐ Could turn this into the default way to post if this works well

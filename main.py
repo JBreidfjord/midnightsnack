@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Form, Depends, HTTPException, Query, status, Security
+from fastapi import FastAPI, Request, Form, Depends, HTTPException, Query, status, Security, File
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, Response, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -11,7 +11,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 from typing import List, Optional
 from datetime import timedelta
-import json
+from secrets import token_hex
+from pathlib import Path
+import subprocess, shutil
 
 import config, tasks, auth
 import schema, crud
@@ -155,3 +157,46 @@ def get_openapi_json():
 @app.get('/docs', dependencies=[Security(auth.verify_token, scopes=['admin'])])
 def get_docs():
     return get_swagger_ui_html(openapi_url='/openapi.json', title='Docs')
+
+
+# Editing/MD-HTML
+def create_tmp():
+    try:
+        tmp_id = str(token_hex(8))
+        tmp_dir = f'./tmp/{tmp_id}'
+        Path(tmp_dir).mkdir()
+        yield tmp_dir
+    finally:
+        shutil.rmtree(tmp_dir)
+        pass
+
+@app.get('/edit', response_class=HTMLResponse)
+def upload_input(request: Request):
+    return templates.TemplateResponse('upload.html', {'request': request})
+
+@app.post('/edit', response_class=HTMLResponse)
+def upload(request: Request, file: bytes = File(...), tmp_dir: Path = Depends(create_tmp)):
+    with open(f'{tmp_dir}/article.md', 'wb') as f:
+        f.write(file)
+        f.close()
+    cmd = f"""node -e 'require("./md-html.js").convert("{tmp_dir}")'"""
+    subprocess.run(cmd, shell=True)
+    article_html = open(f'{tmp_dir}/article.html').read()
+    tmp_id = tmp_dir.replace('./tmp/', '')
+    return templates.TemplateResponse('edit.html', {'request': request, 'article_html': article_html, 'tmp_id': tmp_id})
+
+@app.get('/edit/{tmp_id}', response_class=HTMLResponse)
+def preview(request: Request, tmp_id: str = Query(None)):
+    pass
+
+@app.post('/edit/{tmp_id}')
+def submit_edit(request: Request, article_data: dict):
+    with open('test.html', 'w') as f:
+        f.write(article_data['content'])
+    
+    return RedirectResponse('/test', status_code=303)
+    return templates.TemplateResponse('edit.html', {'request': request, 'article_html': article_data['content']})
+
+@app.get('/test', response_class=HTMLResponse)
+def tester(request: Request):
+    return templates.TemplateResponse('edit.html', {'request': request, 'article_html': open('test.html').read()})

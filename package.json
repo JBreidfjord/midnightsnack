@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/JBreidfjord/blog#readme",
   "dependencies": {
+    "@types/axios": "^0.14.0",
+    "axios": "^0.21.1",
     "showdown": "^1.9.1"
   }
 }

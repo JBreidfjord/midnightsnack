@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request, Form, Depends, HTTPException, Query, status, Security, File
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse, Response, RedirectResponse, JSONResponse
+from fastapi.responses import HTMLResponse, Response, RedirectResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
@@ -13,7 +13,7 @@ from typing import List, Optional
 from datetime import timedelta
 from secrets import token_hex
 from pathlib import Path
-import subprocess, shutil
+import subprocess, shutil, json
 
 import config, tasks, auth
 import schema, crud
@@ -167,7 +167,7 @@ def create_tmp():
         Path(tmp_dir).mkdir()
         yield tmp_dir
     finally:
-        shutil.rmtree(tmp_dir)
+        #shutil.rmtree(tmp_dir)
         pass
 
 @app.get('/edit', response_class=HTMLResponse)
@@ -185,18 +185,16 @@ def upload(request: Request, file: bytes = File(...), tmp_dir: Path = Depends(cr
     tmp_id = tmp_dir.replace('./tmp/', '')
     return templates.TemplateResponse('edit.html', {'request': request, 'article_html': article_html, 'tmp_id': tmp_id})
 
-@app.get('/edit/{tmp_id}', response_class=HTMLResponse)
-def preview(request: Request, tmp_id: str = Query(None)):
+@app.post('/edit/{tmp_id}', response_class=FileResponse)
+def convert_edit(tmp_id: str, article_md: bytes = File(...)):
+    print(article_md)
+    # this function should convert md to html and return html file
+
+@app.get('/edit/{tmp_id}', response_class=FileResponse)
+def get_article_md(tmp_id: str):
+    return FileResponse(f'./tmp/{tmp_id}/article.md')
+
+@app.post('/submit/{tmp_id}')
+def submit_article(tmp_id: str):
     pass
-
-@app.post('/edit/{tmp_id}')
-def submit_edit(request: Request, article_data: dict):
-    with open('test.html', 'w') as f:
-        f.write(article_data['content'])
-    
-    return RedirectResponse('/test', status_code=303)
-    return templates.TemplateResponse('edit.html', {'request': request, 'article_html': article_data['content']})
-
-@app.get('/test', response_class=HTMLResponse)
-def tester(request: Request):
-    return templates.TemplateResponse('edit.html', {'request': request, 'article_html': open('test.html').read()})
+    # this function should move files from tmp_dir to a permanent dir, then remove tmp_dir

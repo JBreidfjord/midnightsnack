@@ -1,23 +1,61 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div contenteditable id="editable-article-content">
+<div id="editable-article-content">
     {{ article_html | safe }}
 </div>
 {% endblock content %}
 
 {% block side_content %}
 <div id="editor-submit">
-    <button class="btn btn-primary" onclick="submitEdit();">Submit</button>
-    <script>
-        function submitEdit() {
-            let xhr = new XMLHttpRequest();
-            let data = document.getElementById("editable-article-content");
-            xhr.open("POST", "/edit/{{ tmp_id }}");
-            xhr.send(JSON.stringify({
-                "content": data.innerHTML
-            }));
-        };
-    </script>
+    <button class="btn btn-primary" id="start-edit">Edit</button>
+    <button class="btn btn-primary" id="submit-edit">Submit</button>
+    <button class="btn btn-primary" id="send-md">Send MD</button>
 </div>
 {% endblock side_content %}
+
+{% block scripts %}
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+    $(document).ready(function(){
+        function startEdit() {
+            console.log('ran startedit')
+            try {
+              document.getElementById("editable-article-content").innerHTML = markdown;
+              document.getElementById("editable-article-content").contentEditable = true;
+            }
+            catch(err) {
+              alert(err);
+            }
+        };
+          
+        function submitEdit() {
+            console.log('ran submitedit')
+            let xhr = new XMLHttpRequest();
+            let content = document.getElementById("editable-article-content").innerHTML;
+            xhr.open("POST", "/edit/convert");
+            xhr.send(JSON.stringify({"content": content}));
+            let response = xhr.response
+            document.getElementById("editable-article-content").innerHTML = data.article_html;
+            document.getElementById("editable-article-content").contentEditable = false;
+        };
+        function submitMd(event) {
+            articleMd = document.getElementById("editable-article-content").innerHTML;
+            form = new FormData();
+            form.append("article_md", articleMd);
+            axios.post(`/edit/${event.data.tmpId}`, {
+                body: form
+            })
+            .then(function (response) {
+                console.log(response);
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+        };
+        $("#start-edit").click(startEdit);
+        $("#submit-edit").click(submitEdit);
+        $("#send-md").click({tmpId: '{{ tmp_id }}'}, submitMd);
+      });
+</script>
+{% endblock scripts %}

@@ -67,12 +67,33 @@ MD-HTML:
     ☐ Input validation on data from json file
 
 Post Editor:
-    ☐ Edit button instead of submit
-    Edit:
-        ☐ onClick: convert html to markdown with turndown
-        ☐ Display markdown and allow editing
-        ☐ Wrap markdown in <pre><code> blocks to have highlightjs help format the markdown
-    ☐ Edit button replaced with submit
-    ☐ onSubmit: send markdown to normal /edit route, starts the process over
-
-    ☐ Could turn this into the default way to post if this works well
+    ✔ Generate random temp folder @done(21-03-16 22:43)
+    Submission Page:
+        ✔ Markdown file upload input @done(21-03-16 22:51)
+        ☐ Image file upload input
+        ☐ Config form; inputs = (title, description, date(yyyy-mm-dd), tags(multiple), imagealt, photographerurl, photographername, keywords(default to same as tags, could this update live as you input tags?))
+        ☐ Validation for form data
+    Route Functions:
+        ✔ Get upload page, return HTMLResponse of submission page @done(21-03-16 22:47)
+        ✔ Post markdown file, function converts to HTML and saves both to tmp_dir, return HTMLResponse of preview page @done(21-03-16 22:48)
+        ☐ Post (with tmp_id path param); similar to original post; convert MD to HTML, update files for both in tmp_dir, return HTML file
+        ☐ Get (with tmp_id path param); return markdown file
+        ☐ Post /submit/{tmp_id}; server function moves files from tmp_dir to permanent dir then removes tmp_dir
+    JS Functions:
+        Edit Article:
+            ☐ Button with click function
+            ☐ Get /edit/{tmp_id}, receiving article.md response
+            ☐ Read file content
+            ☐ Set div innerHtml to content
+            ☐ Set div contentEditable = true
+        Submit Changes:
+            ☐ Button with click function
+            ☐ Store div innerHtml as article.md
+            ☐ Post article.md to /edit/{tmp_id}, receiving article.html response
+            ☐ Read file content
+            ☐ Set div innerHtml to content
+            ☐ Set div contentEditable = false
+        Commit Article:
+            ☐ Button with click function
+            ☐ Confirmation pop up (like alert but with ok/cancel (confirm?))
+            ☐ Post /submit/{tmp_id}

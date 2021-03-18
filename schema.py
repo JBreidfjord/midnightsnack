@@ -2,7 +2,7 @@ from sqlalchemy import select
 from database import SessionLocal
 import models
 from typing import List, Optional
-from pydantic import BaseModel, ValidationError, validator, Field
+from pydantic import BaseModel, validator, Field
 from email_validator import EmailNotValidError, validate_email
 from datetime import datetime
 

@@ -9,9 +9,6 @@ Profile Pages:
     ☐ Add our top posts
     ☐ Add our recent posts
 
-☐ Replace Login/Register nav buttons with New Post/Logout when logged in
-☐ How to display html elements to only certain users? E.g. delete/edit button for posts, new post button
-
 Form Validation (Register):
     ✔ Fix form in HTML @done(21-03-10 15:09)
     ✔ Fix post request handling @done(21-03-10 16:52)
@@ -26,12 +23,12 @@ Form Validation (Register):
 Authentication:
     ✔ Finish reading through FastAPI user guide for auth @done(21-03-12 13:26)
     ✔ Connect to database @done(21-03-12 14:19)
-    ☐ Set redirects for login route
-    ☐ Lock certain routes behind authentication
+    ✔ Set redirects for login route @done(21-03-17 17:45)
+    ✔ Lock certain routes behind authentication @done(21-03-17 17:45)
     ☐ Change navbar based on login status
     ✔ Logout route/function @done(21-03-13 14:37)
     ✔ Logout button in navbar @done(21-03-13 14:37)
-    ☐ Set up redirects for logout route
+    ✔ Set up redirects for logout route @done(21-03-17 17:45)
     ☐ Move all auth related stuff to auth.py
     ☐ Set up router to access routes
     Update database to store tokens and hashed passwords:
@@ -40,6 +37,7 @@ Authentication:
         ✔ Verify model correctness @done(21-03-13 15:46)
     ✔ Verify token @done(21-03-13 13:37)
     ✔ Set scopes @done(21-03-14 15:20)
+    ☐ Remember Me button on login page
 
 Password Reset:
     ☐ Mail via Linode, need to enable
@@ -61,39 +59,51 @@ New features:
 Admin Page:
     ☐ Permissions setting page to allow me to change a user's permissions
 
-MD-HTML:
-    ☐ Input validation on file, must be a .md file
-    ☐ Input validation on form
-    ☐ Input validation on data from json file
-
 Post Editor:
     ✔ Generate random temp folder @done(21-03-16 22:43)
     Submission Page:
         ✔ Markdown file upload input @done(21-03-16 22:51)
-        ☐ Image file upload input
-        ☐ Config form; inputs = (title, description, date(yyyy-mm-dd), tags(multiple), imagealt, photographerurl, photographername, keywords(default to same as tags, could this update live as you input tags?))
+        ✔ Image file upload input @done(21-03-17 21:09)
+        ✔ Config form; inputs = (title, description, tags(multiple), imagealt, photographerurl, photographername) @done(21-03-17 21:09)
+        ✔ Generate date from datetime.today().strftime('%Y-%m-%d') @done(21-03-17 22:44)
+        ✔ Generate keywords from tags @done(21-03-17 22:44)
         ☐ Validation for form data
     Route Functions:
         ✔ Get upload page, return HTMLResponse of submission page @done(21-03-16 22:47)
+        ✔ Process submission data into config.json @done(21-03-17 22:39)
+        ✔ Process header image @done(21-03-17 22:39)
+        ✔ Escape HTML special characters in Markdown before sending @done(21-03-17 16:55)
+        ✔ Unescape before converting @done(21-03-17 16:55)
         ✔ Post markdown file, function converts to HTML and saves both to tmp_dir, return HTMLResponse of preview page @done(21-03-16 22:48)
-        ☐ Post (with tmp_id path param); similar to original post; convert MD to HTML, update files for both in tmp_dir, return HTML file
-        ☐ Get (with tmp_id path param); return markdown file
-        ☐ Post /submit/{tmp_id}; server function moves files from tmp_dir to permanent dir then removes tmp_dir
+        ✔ Post (with tmp_id path param); similar to original post; convert MD to HTML, update files for both in tmp_dir, return HTML file @done(21-03-17 09:09)
+        ✔ Get (with tmp_id path param); return markdown file @done(21-03-17 09:09)
+        ✔ Post /submit/{tmp_id}; server function moves files from tmp_dir to permanent dir then removes tmp_dir @done(21-03-17 09:31)
+        ☐ Commit submitted post to database
+        ✔ Return article url @done(21-03-17 22:43)
+        ☐ Add auth dependencies
     JS Functions:
         Edit Article:
-            ☐ Button with click function
-            ☐ Get /edit/{tmp_id}, receiving article.md response
-            ☐ Read file content
-            ☐ Set div innerHtml to content
-            ☐ Set div contentEditable = true
+            ✔ Button with click function @done(21-03-17 12:01)
+            ✔ Get /edit/{tmp_id}, receiving article.md response @done(21-03-17 12:01)
+            ✔ Read file content @done(21-03-17 13:32)
+            ✔ Set div innerHtml to content @done(21-03-17 13:32)
+            ✔ Set div contentEditable = true @done(21-03-17 13:33)
+            ✔ Fix text color of editable content @done(21-03-17 17:16)
+            ✔ Fix behaviour of enter while editing @done(21-03-17 18:55) (moved contenteditable onto code tag, saves 2 lines as well)
+            ✔ Add ability to use tab to add 4 spaces @done(21-03-17 19:08)
         Submit Changes:
-            ☐ Button with click function
-            ☐ Store div innerHtml as article.md
-            ☐ Post article.md to /edit/{tmp_id}, receiving article.html response
-            ☐ Read file content
-            ☐ Set div innerHtml to content
-            ☐ Set div contentEditable = false
+            ✔ Button with click function @done(21-03-17 17:16)
+            ✔ Store code#editor-block innerHtml as article.md @done(21-03-17 17:26)
+            ✔ Post article.md to /edit/{tmp_id}, receiving article.html response @done(21-03-17 18:29)
+            ✔ Read file content @done(21-03-17 18:29)
+            ✔ Set div innerHtml to response content @done(21-03-17 18:30)
+            ✔ Set div contentEditable = false @done(21-03-17 18:33)
         Commit Article:
-            ☐ Button with click function
-            ☐ Confirmation pop up (like alert but with ok/cancel (confirm?))
-            ☐ Post /submit/{tmp_id}
+            ✔ Button with click function @done(21-03-17 17:50)
+            ✔ Confirmation pop up (like alert but with ok/cancel (confirm?)) @done(21-03-17 17:50)
+            ✔ Post /submit/{tmp_id} @done(21-03-17 17:50)
+            ✔ Redirect to article page if success @done(21-03-17 22:43)
+    ☐ Create post_layout.html template; inputs for json data, article content, and header image
+    ☐ Update crud.get_post and get /posts/slug route for new data; provide new variables to jinja2
+    ☐ Change /posts/slug to use post_layout.html
+    ☐ Update edit.html if necessary to work with new post_layout.html

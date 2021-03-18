@@ -8,16 +8,16 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.openapi.docs import get_swagger_ui_html
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
-from sqlalchemy import select
 from typing import List, Optional
-from datetime import timedelta
+from datetime import timedelta, datetime
 from secrets import token_hex
 from pathlib import Path
-import subprocess, shutil, json
+from slugify import slugify
+import subprocess, shutil, json, os, html, filetype
 
 import config, tasks, auth
 import schema, crud
-from models import User, Post
+from models import User
 from database import SessionLocal, engine, Base
 from dependencies import get_db
 
@@ -45,8 +45,8 @@ Base.metadata.create_all(bind=engine)
 templates = Jinja2Templates(directory='templates')
     
 # Functions
-def get_post_obj(db: Session, post_id: int):
-    obj = crud.get_post(db=db, post_id=post_id)
+def get_post_obj(db: Session, slug: str):
+    obj = crud.get_post(db=db, slug=slug)
     if obj is None:
         raise HTTPException(status_code=404, detail='Post not found')
     return obj
@@ -137,16 +137,16 @@ def submit_post(title: str = Form(...), post_content: str = Form(...), db: Sessi
     post = {'title': title, 'content': post_content, 'user_id': user.id}
     return crud.create_post(db=db, post=post)
 
-@app.delete('/posts/{post_id}', dependencies=[Security(auth.verify_token, scopes=['delete'])])
-def del_post(post_id: int, db: Session = Depends(get_db)):
-    get_post_obj(db=db, post_id=post_id)
-    crud.del_post(db=db, post_id=post_id)
+@app.delete('/posts/{slug}', dependencies=[Security(auth.verify_token, scopes=['delete'])])
+def del_post(slug: str, db: Session = Depends(get_db)):
+    get_post_obj(db=db, slug=slug)
+    crud.del_post(db=db, slug=slug)
     return {'detail': 'Post deleted', 'status_code': 204}
 
 # Post Pages
-@app.get('/posts/{post_id}', response_class=HTMLResponse)
-def get_post(request: Request, post_id: int, db: Session = Depends(get_db)):
-    post = crud.get_post(db=db, post_id=post_id)
+@app.get('/posts/{slug}', response_class=HTMLResponse)
+def get_post(request: Request, slug: str, db: Session = Depends(get_db)):
+    post = crud.get_post(db=db, slug=slug)
     return templates.TemplateResponse('post.html', {'request': request, 'title': post.title, 'post': post})
 
 # Docs
@@ -161,40 +161,97 @@ def get_docs():
 
 # Editing/MD-HTML
 def create_tmp():
-    try:
-        tmp_id = str(token_hex(8))
-        tmp_dir = f'./tmp/{tmp_id}'
-        Path(tmp_dir).mkdir()
-        yield tmp_dir
-    finally:
-        #shutil.rmtree(tmp_dir)
-        pass
+    tmp_id = str(token_hex(8))
+    tmp_dir = f'./tmp/{tmp_id}'
+    Path(tmp_dir).mkdir()
+    yield tmp_dir
+
+
+def escape_html(file: Path, unescape: bool = False):
+    with open(file, 'r+') as f:
+        content = f.read()
+        if unescape:
+            esc_content = html.unescape(content)
+        else:
+            esc_content = html.escape(content, quote=False)
+        f.seek(0)
+        f.write(esc_content)
+        f.truncate()
+
 
 @app.get('/edit', response_class=HTMLResponse)
 def upload_input(request: Request):
     return templates.TemplateResponse('upload.html', {'request': request})
 
+
 @app.post('/edit', response_class=HTMLResponse)
-def upload(request: Request, file: bytes = File(...), tmp_dir: Path = Depends(create_tmp)):
+def upload(
+    request: Request,
+    tmp_dir: Path = Depends(create_tmp),
+    article_file: bytes = File(...),
+    img_file: bytes = File(...),
+    title: str = Form(...),
+    description: str = Form(...),
+    tags: str = Form(...),
+    img_alt: str = Form(...),
+    pg_name: str = Form(...),
+    pg_url: str = Form(...)
+):
+    tag_list = tags.replace(' ', '').split(',')
+    date = datetime.today().strftime('%Y-%m-%d')
+    with open(f'{tmp_dir}/article.config.json', 'w') as f:
+        json.dump({'title': title, 'description': description, 'date': date, 'tags': tag_list, 'imageAlt': img_alt, 'photographerName': pg_name, 'photographerUrl': pg_url, 'keywords': tags.replace(' ', '')},
+            f, indent=4)
+
+    img_ext = filetype.guess_extension(img_file)
+    if not img_ext:
+        img_ext = 'png'
+    with open(f'{tmp_dir}/headerImage.{img_ext}', 'wb') as f:
+        f.write(img_file)
+
+    tmp_id = tmp_dir.replace('./tmp/', '')
     with open(f'{tmp_dir}/article.md', 'wb') as f:
-        f.write(file)
-        f.close()
+        f.write(article_file)
+    escape_html(file=(Path(f'./tmp/{tmp_id}/article.md')), unescape=True)
     cmd = f"""node -e 'require("./md-html.js").convert("{tmp_dir}")'"""
     subprocess.run(cmd, shell=True)
-    article_html = open(f'{tmp_dir}/article.html').read()
-    tmp_id = tmp_dir.replace('./tmp/', '')
+
+    with open(f'{tmp_dir}/article.html') as f:
+        article_html = f.read()
     return templates.TemplateResponse('edit.html', {'request': request, 'article_html': article_html, 'tmp_id': tmp_id})
 
-@app.post('/edit/{tmp_id}', response_class=FileResponse)
-def convert_edit(tmp_id: str, article_md: bytes = File(...)):
-    print(article_md)
-    # this function should convert md to html and return html file
 
 @app.get('/edit/{tmp_id}', response_class=FileResponse)
 def get_article_md(tmp_id: str):
+    escape_html(file=(Path(f'./tmp/{tmp_id}/article.md')))
     return FileResponse(f'./tmp/{tmp_id}/article.md')
 
-@app.post('/submit/{tmp_id}')
-def submit_article(tmp_id: str):
-    pass
-    # this function should move files from tmp_dir to a permanent dir, then remove tmp_dir
+
+@app.post('/edit/{tmp_id}', response_class=FileResponse)
+def convert_edit(tmp_id: str, article_md: bytes = File(...)):
+    tmp_dir = f'./tmp/{tmp_id}'
+    with open(f'{tmp_dir}/article.md', 'wb') as f:
+        f.write(article_md)
+    
+    escape_html(file=(Path(f'./tmp/{tmp_id}/article.md')), unescape=True)
+    cmd = f"""node -e 'require("./md-html.js").convert("{tmp_dir}")'"""
+    subprocess.run(cmd, shell=True)
+    return FileResponse(f'{tmp_dir}/article.html')
+
+
+@app.post('/submit/{tmp_id}', response_class=JSONResponse)
+def submit_article(tmp_id: str, db: Session = Depends(get_db)):
+    tmp_dir = f'./tmp/{tmp_id}'
+    article_files = os.listdir(tmp_dir)
+    with open(f'{tmp_dir}/article.config.json') as f:
+        article_config = json.load(f)
+    article_slug = slugify(article_config['title'], max_length=20)
+    article_path = f'./static/posts/{article_slug}'
+    Path(article_path).mkdir(parents=True, exist_ok=True)
+    for file in article_files:
+        shutil.move(Path(tmp_dir).joinpath(file), Path(article_path).joinpath(file))
+    shutil.rmtree(tmp_dir)
+    
+    # add and commit to db
+
+    return JSONResponse({'url': f'/posts/{article_slug}'})

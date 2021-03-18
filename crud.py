@@ -15,11 +15,11 @@ def create_post(db: Session, post: schema.PostCreate):
 def get_all_posts(db: Session):
     return db.execute(select(Post)).scalars()
 
-def get_post(db: Session, post_id: int):
-    return db.execute(select(Post).where(Post.id == post_id)).scalar()
+def get_post(db: Session, slug: str):
+    return db.execute(select(Post).where(Post.slug == slug)).scalar()
 
-def del_post(db: Session, post_id: int):
-    db.execute(delete(Post).where(Post.id == post_id))
+def del_post(db: Session, slug: str):
+    db.execute(delete(Post).where(Post.slug == slug))
     db.commit()
 
 

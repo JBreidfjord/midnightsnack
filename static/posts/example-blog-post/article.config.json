@@ -1,0 +1,13 @@
+{
+    "title": "Example Blog Post",
+    "description": "A quick test to find any errors",
+    "date": "2021-03-17",
+    "tags": [
+        "test",
+        "example"
+    ],
+    "imageAlt": "Big OOF",
+    "photographerName": "Stu Macky",
+    "photographerUrl": "https://flightlessrecords.com/",
+    "keywords": "test,example"
+}

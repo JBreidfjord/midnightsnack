@@ -1,15 +1,10 @@
 body {
     background: #131516;
     color: #d8d4cf;
-    margin-top: 5rem;
 }
 
 h1, h2, h3, h4, h5, h6 {
     color: #e8e6e3;
-}
-
-.bg-steel {
-    background-color: #5f788a;
 }
 
 .site-header .navbar-nav .nav-link {
@@ -85,5 +80,27 @@ a.article-title:hover {
 }
 
 pre code#editor-block {
+    color: #d8d4cf;
+}
+
+blockquote { 
+    display: block;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    margin-inline-start: 40px;
+    margin-inline-end: 40px;
+}
+
+#main {
+    margin-top: 2rem;
+}
+
+.dropdown-item {
+    background: #131516;
+    color: #d8d4cf;
+}
+
+.dropdown-menu {
+    background: #131516;
     color: #d8d4cf;
 }

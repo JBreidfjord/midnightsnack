@@ -1,6 +1,7 @@
 {
     "title": "Article title",
     "description": "Article description",
+    "author": "Your username",
     "date": "yyyy-mm-dd",
     "tags": [
         "x",

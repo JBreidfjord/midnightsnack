@@ -26,6 +26,7 @@ Authentication:
     ✔ Set redirects for login route @done(21-03-17 17:45)
     ✔ Lock certain routes behind authentication @done(21-03-17 17:45)
     ☐ Change navbar based on login status
+    Could apply global dependency to check user status, maybe just check if they have an auth cookie? less overhead than checking db that way
     ✔ Logout route/function @done(21-03-13 14:37)
     ✔ Logout button in navbar @done(21-03-13 14:37)
     ✔ Set up redirects for logout route @done(21-03-17 17:45)
@@ -78,7 +79,7 @@ Post Editor:
         ✔ Post (with tmp_id path param); similar to original post; convert MD to HTML, update files for both in tmp_dir, return HTML file @done(21-03-17 09:09)
         ✔ Get (with tmp_id path param); return markdown file @done(21-03-17 09:09)
         ✔ Post /submit/{tmp_id}; server function moves files from tmp_dir to permanent dir then removes tmp_dir @done(21-03-17 09:31)
-        ☐ Commit submitted post to database
+        ✔ Commit submitted post to database @done(21-03-18 21:55)
         ✔ Return article url @done(21-03-17 22:43)
         ☐ Add auth dependencies
     JS Functions:
@@ -103,7 +104,19 @@ Post Editor:
             ✔ Confirmation pop up (like alert but with ok/cancel (confirm?)) @done(21-03-17 17:50)
             ✔ Post /submit/{tmp_id} @done(21-03-17 17:50)
             ✔ Redirect to article page if success @done(21-03-17 22:43)
-    ☐ Create post_layout.html template; inputs for json data, article content, and header image
-    ☐ Update crud.get_post and get /posts/slug route for new data; provide new variables to jinja2
-    ☐ Change /posts/slug to use post_layout.html
-    ☐ Update edit.html if necessary to work with new post_layout.html
+    ✔ Create post.html template; inputs for json data, article content, and header image @done(21-03-18 23:56)
+    ✔ Update crud.get_post and get /posts/slug route for new data; provide new variables to jinja2 @done(21-03-18 23:56)
+    ☐ Create route for editing existing article; /posts/edit
+    ☐ Create edit submission function for when editing existing article
+    
+✔ Fix image size in post.html @done(21-03-18 23:56)
+☐ Fix quote block style
+☐ Add href to author page in post.html
+
+☐ Add /tags/{tag} route
+☐ Get matching posts from db
+☐ HTMLResponse, list all posts matching tag
+
+☐ Change posts on home page to show title, author, date, and description
+
+☐ Update style of login and registration forms to match submission form

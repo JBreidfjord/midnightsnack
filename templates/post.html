@@ -1,7 +1,51 @@
 {% extends "layout.html" %}
 
+{% if not author %}
+    {% set author = article.author.username %}
+    {% set date = article.date_posted.date() %}
+{% else %}
+    {% set date = article.date_posted %}
+{% endif %}
+
+{% block head %}
+{% set title = article.title %}
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="description" content="{{ article.description }}">
+<meta name="keywords" content="{{ article.keywords }}">
+<meta property="og:type" content="article">
+<meta property="og:title" content="{{ article.title }}">
+<meta property="og:description" content="{{ article.description }}">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="{{ date }}">
+<meta property="og:image" content="../{{ img_path }}">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="{{ article.title }}">
+<meta name="twitter:description" content="{{ article.description }}">
+<meta name="twitter:image" content="../{{ img_path }}">
+{% endblock %}
+
 {% block content %}
-    <h2>{{ post.title }}</h2>
-    <p>By {{ post.author.username }} on {{ post.date_posted.date() }}</p>
-    <p>{{ post.content | safe }}</p>
+<div class="article-container">
+    <div class="article-header">
+        <h2>{{ article.title }}</h2>
+        <h6>{{ author }} - {{ date }}</h6>
+        <h6>
+            {% for tag in article.tags %}
+                <span><a href="/tags/{{ tag.name }}">#{{ tag.name }}</a></span>
+            {% endfor %}
+        </h6>
+        <img src="../{{ img_path }}" alt="{{ article.image_text }}" class="img-fluid">
+        <small class="text-muted">Photo by <a href="{{ article.photographer_url }}">{{ article.photographer_name }}</a></small>
+    </div>
+    <br>
+    <div>
+        {% block article %}
+            {{ article_content | safe }}
+        {% endblock article %}
+    </div>
+</div>
 {% endblock content %}
+
+{% block side_content %}{% endblock %}
+{% block scripts %}{% endblock %}

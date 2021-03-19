@@ -17,7 +17,7 @@ import subprocess, shutil, json, os, html, filetype
 
 import config, tasks, auth
 import schema, crud
-from models import User
+from models import User, Tag
 from database import SessionLocal, engine, Base
 from dependencies import get_db
 
@@ -35,7 +35,8 @@ def get_application():
     app.add_event_handler('startup', tasks.create_start_app_handler(app))
     app.add_event_handler('shutdown', tasks.create_stop_app_handler(app))
 
-    app.mount('/static', StaticFiles(directory='static'), name='static') # will replace to be served with nginx
+    app.mount('/static', StaticFiles(directory='static'), name='static') # maybe replace to serve with nginx?
+    app.mount('/tmp', StaticFiles(directory='tmp'), name='tmp')
     return app
 
 app = get_application()
@@ -137,6 +138,14 @@ def submit_post(title: str = Form(...), post_content: str = Form(...), db: Sessi
     post = {'title': title, 'content': post_content, 'user_id': user.id}
     return crud.create_post(db=db, post=post)
 
+@app.get('/posts/edit')
+def edit_post():
+    pass
+
+@app.post('/posts/edit')
+def submit_edit():
+    pass
+
 @app.delete('/posts/{slug}', dependencies=[Security(auth.verify_token, scopes=['delete'])])
 def del_post(slug: str, db: Session = Depends(get_db)):
     get_post_obj(db=db, slug=slug)
@@ -146,8 +155,11 @@ def del_post(slug: str, db: Session = Depends(get_db)):
 # Post Pages
 @app.get('/posts/{slug}', response_class=HTMLResponse)
 def get_post(request: Request, slug: str, db: Session = Depends(get_db)):
-    post = crud.get_post(db=db, slug=slug)
-    return templates.TemplateResponse('post.html', {'request': request, 'title': post.title, 'post': post})
+    article_data = crud.get_post(db=db, slug=slug)
+    article, img_path, content_path = article_data.values()
+    with open(content_path) as f:
+        content = f.read()
+    return templates.TemplateResponse('post.html', {'request': request, 'article': article, 'article_content': content, 'img_path': img_path})
 
 # Docs
 @app.get('/openapi.json', dependencies=[Security(auth.verify_token, scopes=['admin'])])
@@ -187,7 +199,6 @@ def upload_input(request: Request):
 @app.post('/edit', response_class=HTMLResponse)
 def upload(
     request: Request,
-    tmp_dir: Path = Depends(create_tmp),
     article_file: bytes = File(...),
     img_file: bytes = File(...),
     title: str = Form(...),
@@ -195,18 +206,22 @@ def upload(
     tags: str = Form(...),
     img_alt: str = Form(...),
     pg_name: str = Form(...),
-    pg_url: str = Form(...)
+    pg_url: str = Form(...),
+    user: User = Depends(auth.verify_token)
 ):
+    tmp_dir = next(create_tmp())
+
     tag_list = tags.replace(' ', '').split(',')
     date = datetime.today().strftime('%Y-%m-%d')
     with open(f'{tmp_dir}/article.config.json', 'w') as f:
-        json.dump({'title': title, 'description': description, 'date': date, 'tags': tag_list, 'imageAlt': img_alt, 'photographerName': pg_name, 'photographerUrl': pg_url, 'keywords': tags.replace(' ', '')},
+        json.dump({'title': title, 'description': description, 'author': user.username, 'date': date, 'tags': tag_list, 'imageAlt': img_alt, 'photographerName': pg_name, 'photographerUrl': pg_url, 'keywords': tags.replace(' ', '')},
             f, indent=4)
 
     img_ext = filetype.guess_extension(img_file)
     if not img_ext:
         img_ext = 'png'
-    with open(f'{tmp_dir}/headerImage.{img_ext}', 'wb') as f:
+    img_path = f'{tmp_dir}/headerImage.{img_ext}'
+    with open(img_path, 'wb') as f:
         f.write(img_file)
 
     tmp_id = tmp_dir.replace('./tmp/', '')
@@ -218,7 +233,19 @@ def upload(
 
     with open(f'{tmp_dir}/article.html') as f:
         article_html = f.read()
-    return templates.TemplateResponse('edit.html', {'request': request, 'article_html': article_html, 'tmp_id': tmp_id})
+
+    article = {
+        'title': title,
+        'slug': slugify(title, max_length=20),
+        'date_posted': date,
+        'description': description,
+        'image_text': img_alt,
+        'photographer_name': pg_name,
+        'photographer_url': pg_url,
+        'keywords': tags.replace(' ', ''),
+        'tags': [Tag(name=tag) for tag in tags.replace(' ', '').split(',')]
+    }
+    return templates.TemplateResponse('edit.html', {'request': request, 'article_content': article_html, 'img_path': img_path, 'article': article, 'tmp_id': tmp_id, 'author': user.username})
 
 
 @app.get('/edit/{tmp_id}', response_class=FileResponse)
@@ -240,7 +267,7 @@ def convert_edit(tmp_id: str, article_md: bytes = File(...)):
 
 
 @app.post('/submit/{tmp_id}', response_class=JSONResponse)
-def submit_article(tmp_id: str, db: Session = Depends(get_db)):
+def submit_article(tmp_id: str, db: Session = Depends(get_db), user: User = Depends(auth.verify_token)):
     tmp_dir = f'./tmp/{tmp_id}'
     article_files = os.listdir(tmp_dir)
     with open(f'{tmp_dir}/article.config.json') as f:
@@ -252,6 +279,16 @@ def submit_article(tmp_id: str, db: Session = Depends(get_db)):
         shutil.move(Path(tmp_dir).joinpath(file), Path(article_path).joinpath(file))
     shutil.rmtree(tmp_dir)
     
-    # add and commit to db
-
+    data = {
+        'title': article_config['title'],
+        'slug': article_slug,
+        'user_id': user.id,
+        'description': article_config['description'],
+        'image_text': article_config['imageAlt'],
+        'photographer_name': article_config['photographerName'],
+        'photographer_url': article_config['photographerUrl'],
+        'keywords': article_config['keywords'],
+        'tags': [Tag(name=tag) for tag in article_config['tags']]
+    }
+    crud.create_post(db=db, post=data)
     return JSONResponse({'url': f'/posts/{article_slug}'})

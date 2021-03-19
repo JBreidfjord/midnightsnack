@@ -1,18 +1,21 @@
-{% extends "post_layout.html" %}
+{% extends "post.html" %}
 
 {% block content %}
-<div id="editable-article-content" class="editable-article-content">
-    {{ article_html | safe }}
-</div>
+{{ super() }}
+    {% block article %}
+    <div id="editable-article-content" class="editable-article-content">
+        {{ super() }}
+    </div>
+    {% endblock article %}
 {% endblock content %}
 
-{% block side_content %}
-<div id="editor-submit">
-    <button class="btn btn-primary" id="start-edit">Edit Article</button>
-    <button class="btn btn-primary" id="submit-edit">Submit Changes</button>
-    <button class="btn btn-primary" id="commit-article">Finish</button>
+{% block right_side_content %}
+<div class="btn-group-vertical btn-group-sm position-fixed" id="editor-submit" role="group" aria-label="Editor button group">
+    <button class="btn btn-outline-primary" id="start-edit">Edit Article</button>
+    <button class="btn btn-outline-primary" id="submit-edit">Submit Changes</button>
+    <button class="btn btn-outline-primary" id="commit-article">Finish</button>
 </div>
-{% endblock side_content %}
+{% endblock right_side_content %}
 
 {% block scripts %}
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>

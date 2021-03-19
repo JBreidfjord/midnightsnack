@@ -5,3 +5,4 @@
 scope.py
 /node_modules
 /tmp
+/static/posts

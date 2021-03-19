@@ -110,7 +110,8 @@ Post Editor:
     ☐ Create edit submission function for when editing existing article
     
 ✔ Fix image size in post.html @done(21-03-18 23:56)
-☐ Fix quote block style
+✔ Fix quote block style @done(21-03-19 00:10)
+☐ Change article header style
 ☐ Add href to author page in post.html
 
 ☐ Add /tags/{tag} route

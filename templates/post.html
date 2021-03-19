@@ -32,11 +32,11 @@
         <h6>{{ author }} - {{ date }}</h6>
         <h6>
             {% for tag in article.tags %}
-                <span><a href="/tags/{{ tag.name }}">#{{ tag.name }}</a></span>
+                <small class="text-muted"><a href="/tags/{{ tag.name }}" class="link-secondary">#{{ tag.name }}</a></small>
             {% endfor %}
         </h6>
         <img src="../{{ img_path }}" alt="{{ article.image_text }}" class="img-fluid">
-        <small class="text-muted">Photo by <a href="{{ article.photographer_url }}">{{ article.photographer_name }}</a></small>
+        <small class="text-muted">Photo by <a href="{{ article.photographer_url }}" class="link-secondary">{{ article.photographer_name }}</a></small>
     </div>
     <br>
     <div>

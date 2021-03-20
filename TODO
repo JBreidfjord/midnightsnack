@@ -31,7 +31,6 @@ Authentication:
     ✔ Logout button in navbar @done(21-03-13 14:37)
     ✔ Set up redirects for logout route @done(21-03-17 17:45)
     ☐ Move all auth related stuff to auth.py
-    ☐ Set up router to access routes
     Update database to store tokens and hashed passwords:
         ✔ Change input functions to hash before storing @done(21-03-13 15:46)
         ✔ Update existing data @done(21-03-13 15:46)
@@ -45,8 +44,8 @@ Password Reset:
     ☐ Set up form/page
 
 Auto-blog:
-    ☐ Convert markdown to HTML
-    ☐ Create post
+    ✔ Convert markdown to HTML @done(21-03-20 10:16)
+    ✔ Create post @done(21-03-20 10:16)
 
 New features:
     ☐ Custom 404/status pages
@@ -54,8 +53,6 @@ New features:
 ✔ Change User schemas, base should contain only import info like username, email, image @done(21-03-13 13:48)
 
 ☐ Simplify db tasks, use onstartup and onshutdown events from fastapi
-
-☐ Truncate post previews on home page, limit to certain character length
 
 Admin Page:
     ☐ Permissions setting page to allow me to change a user's permissions
@@ -69,6 +66,7 @@ Post Editor:
         ✔ Generate date from datetime.today().strftime('%Y-%m-%d') @done(21-03-17 22:44)
         ✔ Generate keywords from tags @done(21-03-17 22:44)
         ☐ Validation for form data
+        Title can't be 'create' or 'edit'
     Route Functions:
         ✔ Get upload page, return HTMLResponse of submission page @done(21-03-16 22:47)
         ✔ Process submission data into config.json @done(21-03-17 22:39)
@@ -108,10 +106,19 @@ Post Editor:
     ✔ Update crud.get_post and get /posts/slug route for new data; provide new variables to jinja2 @done(21-03-18 23:56)
     ✔ Create route for editing existing article; /posts/edit/{post_id} @done(21-03-19 12:20)
     Using post_id for route so title can be updated
-    ☐ Create edit submission function for when editing existing article
+    ✔ Create edit submission function for when editing existing article @done(21-03-20 10:52)
     ☐ Add edit functionality for header and article info
     Could use same idea as content editing, but replace with form to submit instead
+    ✔ Create /posts/edit function @done(21-03-20 12:40)
+    ☐ Create edit_search.html
+    Display search bar (with autocompletion) to search by post title, submit takes you to /posts/edit/{post_id}
     
+☐ Add 'All' option to posts dropdown
+☐ Create page with all posts listed
+☐ Limit homepage to recent 10 posts then link for all posts there as well
+
+☐ Split crud.get_post function
+✔ Update route order to allow priority to /posts/create and /posts/edit priority @done(21-03-20 10:52)
 ✔ Fix image size in post.html @done(21-03-18 23:56)
 ✔ Fix quote block style @done(21-03-19 00:10)
 ☐ Change article header style
@@ -121,10 +128,25 @@ Post Editor:
 ☐ Get matching posts from db
 ☐ HTMLResponse, list all posts matching tag
 
+☐ Add scrollspy on posts
+Generate table of contents based on headers in article, scrollspy to highlight
+
+☐ Add archive function
+Del will remove from db and drive, archive will set archived to true in db and keeps folder on drive
+
+Clean Up:
+    Scheduled function to clean up data/files
+    ☐ Remove posts folders no longer matching a post in the database
+
 ☐ Change posts on home page to show title, author, date, and description
 
 ☐ Update style of login and registration forms to match submission form
 
 Code Style:
+    ☐ Split routes between different router modules
+    ☐ Condense repeated code to functions
+    Submitting edits could mostly be added to a function
     ☐ Docstrings on all functions
     ☐ Docstrings on all routes (will these also appear in the autodocs?)
+    ☐ Consistency for use of 'post' vs 'article', just use post
+    ☐ Add error handling to functions

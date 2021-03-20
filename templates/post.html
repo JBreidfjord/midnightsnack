@@ -39,7 +39,7 @@
         <small class="text-muted">Photo by <a href="{{ article.photographer_url }}" class="link-secondary">{{ article.photographer_name }}</a></small>
     </div>
     <br>
-    <div>
+    <div class="article-content">
         {% block article %}
             {{ article_content | safe }}
         {% endblock article %}

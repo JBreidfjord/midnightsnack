@@ -43,7 +43,7 @@
         function commitPost() {
             result = confirm("Are you sure?\nThis will commit the article.")
             if (result == true) {
-                axios.post("/posts/edit/{{ post_id }}")
+                axios.post("/posts/edit/{{ article.id }}", {tmp_id: "{{ tmp_id }}"})
                 .then(function (response) {
                     console.log(response);
                     alert(response.data);

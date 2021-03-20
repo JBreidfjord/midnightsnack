@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Form, Depends, HTTPException, Query, status, Security, File
+from fastapi import FastAPI, Request, Form, Depends, HTTPException, Query, status, Security, File, Body
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, Response, RedirectResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -8,6 +8,7 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.openapi.docs import get_swagger_ui_html
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 from typing import List, Optional
 from datetime import timedelta, datetime
 from secrets import token_hex
@@ -110,14 +111,14 @@ def register(username: str = Form(...), email: str = Form(...), password: str = 
         db = SessionLocal()
         db.add(user)
         db.commit()
-        response = RedirectResponse(url=f'/register', status_code=303)
+        response = RedirectResponse(url='/register', status_code=303)
         response.delete_cookie(key='Errors')
         response.set_cookie(key='Success', value=True, max_age=30, expires=30)
         return response
     except ValidationError as exception:
         errors = [error['msg'] for error in exception.errors()]
         error_str = ':'.join(errors)
-        response = RedirectResponse(url=f'/register', status_code=303)
+        response = RedirectResponse(url='/register', status_code=303)
         response.delete_cookie(key='Success')
         response.set_cookie(key='Errors', value=error_str, max_age=30, expires=30)
         return response
@@ -125,12 +126,13 @@ def register(username: str = Form(...), email: str = Form(...), password: str = 
 # Users
 @app.get('/users/me')
 def read_current_user(user: User = Depends(auth.verify_token), db: Session = Depends(get_db)):
+    # get user data from db
     return user.username
 
 # CRUD
 # Post Management
-@app.get('/posts/edit/{post_id}')
-def edit_post(request: Request, post_id: str, db: Session = Depends(get_db), user: User = Depends(auth.verify_token)):
+@app.get('/posts/edit/{post_id}', dependencies=[Security(auth.verify_token, scopes=['edit'])])
+def edit_post(request: Request, post_id: str, db: Session = Depends(get_db)):
     tmp_dir = next(create_tmp())
     tmp_id = tmp_dir.replace('./tmp/', '')
     article, img_path, article_path, content_path = crud.get_post(db=db, post_id=post_id).values()
@@ -139,26 +141,25 @@ def edit_post(request: Request, post_id: str, db: Session = Depends(get_db), use
 
     for file in Path(content_path).iterdir():
         shutil.copy(file, Path(tmp_dir).joinpath(file.name))
-    return templates.TemplateResponse('edit_exist.html', {'request': request, 'article_content': article_html, 'img_path': img_path, 'article': article, 'tmp_id': tmp_id, 'author': user.username})
+    return templates.TemplateResponse('edit_exist.html', {'request': request, 'article_content': article_html, 'img_path': img_path, 'article': article, 'tmp_id': tmp_id})
 
-@app.post('/posts/edit/{post_id}')
-def submit_edit(tmp_id: str, db: Session = Depends(get_db), user: User = Depends(auth.verify_token)):
-    # EDIT THIS FUNCTION, THIS IS JUST FROM THE OTHER ROUTE, CHANGE/REMOVE AS NECESSARY
-    tmp_dir = f'./tmp/{tmp_id}'
-    article_files = os.listdir(tmp_dir)
+@app.post('/posts/edit/{post_id}', dependencies=[Security(auth.verify_token, scopes=['edit'])])
+def submit_edit(post_id: int, tmp_id: str = Body(..., embed=True), db: Session = Depends(get_db)):
+    tmp_dir = Path(f'./tmp/{tmp_id}')
     with open(f'{tmp_dir}/article.config.json') as f:
         article_config = json.load(f)
     article_slug = slugify(article_config['title'], max_length=20)
-    article_path = f'./static/posts/{article_slug}'
-    Path(article_path).mkdir(parents=True, exist_ok=True)
-    for file in article_files:
-        shutil.move(Path(tmp_dir).joinpath(file), Path(article_path).joinpath(file))
+    article_path = Path(f'./static/posts/{article_slug}')
+    article_path.mkdir(parents=True, exist_ok=True)
+    for file in tmp_dir.iterdir():
+        shutil.move(file, article_path.joinpath(file.name))
     shutil.rmtree(tmp_dir)
+    author_id = db.execute(select(User.id).where(User.username == article_config['author'])).scalar()
     
     data = {
         'title': article_config['title'],
         'slug': article_slug,
-        'user_id': user.id,
+        'user_id': author_id,
         'description': article_config['description'],
         'image_text': article_config['imageAlt'],
         'photographer_name': article_config['photographerName'],
@@ -166,7 +167,7 @@ def submit_edit(tmp_id: str, db: Session = Depends(get_db), user: User = Depends
         'keywords': article_config['keywords'],
         'tags': [Tag(name=tag) for tag in article_config['tags']]
     }
-    crud.create_post(db=db, post=data)
+    crud.edit_post(db=db, post_id=post_id, data=data)
     return JSONResponse({'url': f'/posts/{article_slug}'})
 
 @app.delete('/posts/{slug}', dependencies=[Security(auth.verify_token, scopes=['delete'])])
@@ -174,14 +175,6 @@ def del_post(slug: str, db: Session = Depends(get_db)):
     get_post_obj(db=db, slug=slug)
     crud.del_post(db=db, slug=slug)
     return {'detail': 'Post deleted', 'status_code': 204}
-
-# Post Pages
-@app.get('/posts/{slug}', response_class=HTMLResponse)
-def get_post(request: Request, slug: str, db: Session = Depends(get_db)):
-    article, img_path, content_path = crud.get_post(db=db, slug=slug).values()
-    with open(content_path) as f:
-        content = f.read()
-    return templates.TemplateResponse('post.html', {'request': request, 'article': article, 'article_content': content, 'img_path': img_path})
 
 # Docs
 @app.get('/openapi.json', dependencies=[Security(auth.verify_token, scopes=['admin'])])
@@ -212,13 +205,23 @@ def escape_html(file: Path, unescape: bool = False):
         f.write(esc_content)
         f.truncate()
 
+@app.get('/posts/edit', response_class=HTMLResponse, dependencies=[Security(auth.verify_token, scopes=['edit'])])
+def search_posts(request: Request, db: Session = Depends(get_db)):
+    post_list = [post.title for post in crud.get_all_posts(db=db)]
+    return templates.TemplateResponse('edit_search.html', {'request': request, 'post_list': post_list})
 
-@app.get('/edit', response_class=HTMLResponse)
+@app.post('/posts/edit', response_class=RedirectResponse, dependencies=[Security(auth.verify_token, scopes=['edit'])])
+def redir_edit(search: str = Form(...), db: Session = Depends(get_db)):
+    slug = slugify(search)
+    post = crud.get_post(slug=slug, db=db)['post_obj']
+    return RedirectResponse(f'/posts/edit/{post.id}')
+
+@app.get('/posts/create', response_class=HTMLResponse, dependencies=[Security(auth.verify_token, scopes=['post'])])
 def upload_input(request: Request):
     return templates.TemplateResponse('upload.html', {'request': request})
 
 
-@app.post('/edit', response_class=HTMLResponse)
+@app.post('/posts/create', response_class=HTMLResponse, dependencies=[Security(auth.verify_token, scopes=['edit'])])
 def upload(
     request: Request,
     article_file: bytes = File(...),
@@ -270,13 +273,13 @@ def upload(
     return templates.TemplateResponse('edit.html', {'request': request, 'article_content': article_html, 'img_path': img_path, 'article': article, 'tmp_id': tmp_id, 'author': user.username})
 
 
-@app.get('/edit/{tmp_id}', response_class=FileResponse)
+@app.get('/edit/{tmp_id}', response_class=FileResponse, dependencies=[Security(auth.verify_token, scopes=['edit'])])
 def get_article_md(tmp_id: str):
     escape_html(file=(Path(f'./tmp/{tmp_id}/article.md')))
     return FileResponse(f'./tmp/{tmp_id}/article.md')
 
 
-@app.post('/edit/{tmp_id}', response_class=FileResponse)
+@app.post('/edit/{tmp_id}', response_class=FileResponse, dependencies=[Security(auth.verify_token, scopes=['edit'])])
 def convert_edit(tmp_id: str, article_md: bytes = File(...)):
     tmp_dir = f'./tmp/{tmp_id}'
     with open(f'{tmp_dir}/article.md', 'wb') as f:
@@ -288,23 +291,23 @@ def convert_edit(tmp_id: str, article_md: bytes = File(...)):
     return FileResponse(f'{tmp_dir}/article.html')
 
 
-@app.post('/submit/{tmp_id}', response_class=JSONResponse)
-def submit_article(tmp_id: str, db: Session = Depends(get_db), user: User = Depends(auth.verify_token)):
-    tmp_dir = f'./tmp/{tmp_id}'
-    article_files = os.listdir(tmp_dir)
+@app.post('/submit/{tmp_id}', response_class=JSONResponse, dependencies=[Security(auth.verify_token, scopes=['post'])])
+def submit_article(tmp_id: str, db: Session = Depends(get_db)):
+    tmp_dir = Path(f'./tmp/{tmp_id}')
     with open(f'{tmp_dir}/article.config.json') as f:
         article_config = json.load(f)
     article_slug = slugify(article_config['title'], max_length=20)
-    article_path = f'./static/posts/{article_slug}'
-    Path(article_path).mkdir(parents=True, exist_ok=True)
-    for file in article_files:
-        shutil.move(Path(tmp_dir).joinpath(file), Path(article_path).joinpath(file))
+    article_path = Path(f'./static/posts/{article_slug}')
+    article_path.mkdir(parents=True, exist_ok=True)
+    for file in tmp_dir.iterdir():
+        shutil.move(file, article_path.joinpath(file.name))
     shutil.rmtree(tmp_dir)
+    author_id = db.execute(select(User.id).where(User.username == article_config['author']))
     
     data = {
         'title': article_config['title'],
         'slug': article_slug,
-        'user_id': user.id,
+        'user_id': author_id,
         'description': article_config['description'],
         'image_text': article_config['imageAlt'],
         'photographer_name': article_config['photographerName'],
@@ -314,3 +317,11 @@ def submit_article(tmp_id: str, db: Session = Depends(get_db), user: User = Depe
     }
     crud.create_post(db=db, post=data)
     return JSONResponse({'url': f'/posts/{article_slug}'})
+
+# Post Pages
+@app.get('/posts/{slug}', response_class=HTMLResponse)
+def get_post(request: Request, slug: str, db: Session = Depends(get_db)):
+    article, img_path, article_path, content_path = crud.get_post(db=db, slug=slug).values()
+    with open(article_path) as f:
+        content = f.read()
+    return templates.TemplateResponse('post.html', {'request': request, 'article': article, 'article_content': content, 'img_path': img_path})

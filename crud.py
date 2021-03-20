@@ -4,12 +4,12 @@ from sqlalchemy.exc import IntegrityError
 from models import User, Post, Tag
 from typing import List
 from pathlib import Path
-import schema
+import schema, shutil
 
 
 # Post
 def create_post(db: Session, post: schema.PostCreate):
-    '''Creates an instance of the User class, taking the database session and post info defined by the schema as inputs'''
+    '''Creates an instance of the Post class, taking the database session and post info defined by the schema as inputs'''
     print(post)
     obj = Post(**post)
     db.add(obj)
@@ -20,6 +20,10 @@ def get_all_posts(db: Session):
     return db.execute(select(Post)).scalars()
 
 def get_post(db: Session, slug: str = None, post_id: int = None):
+    # split this to 2 functions
+    # this one should just return the post object
+    # the other will return the data dict, calling this one for the post object
+    # could probably eliminate the if/elif block this way too
     if slug:
         obj = db.execute(select(Post).where(Post.slug == slug)).scalar()
     elif post_id:
@@ -37,6 +41,11 @@ def get_post(db: Session, slug: str = None, post_id: int = None):
 
 def del_post(db: Session, slug: str):
     db.execute(delete(Post).where(Post.slug == slug))
+    db.commit()
+    shutil.rmtree(Path(f'./static/posts/{slug}'))
+
+def edit_post(db: Session, post_id: int, data: dict):
+    db.execute(update(Post).where(Post.id == post_id).values(**data))
     db.commit()
 
 # Tags

@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.6.0/styles/atom-one-dark.min.css">
     
     <!-- Custom CSS -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono&family=Work+Sans&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='/main.css') }}">
 
     {% block head %}{% endblock %}
@@ -48,7 +50,7 @@
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">Post</a>
                                     <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                                        <li><a class="dropdown-item" href="/posts/new/">New</a></li>
+                                        <li><a class="dropdown-item" href="/posts/create/">New</a></li>
                                         <li><a class="dropdown-item" href="/posts/edit/">Edit</a></li>
                                     </ul>
                                 </li>

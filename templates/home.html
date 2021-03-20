@@ -3,9 +3,11 @@
 {% block content %}
     <h2>Home Page</h2>
     <br>
+    <div class="container" id="post-list">
     {% for post in posts %}
-        <h4><a href='/posts/{{ post.id }}'>{{ post.title }}</a></h4>
+        <h4><a href='/posts/{{ post.slug }}'>{{ post.title }}</a></h4>
         <p>By {{ post.author.username }} on {{ post.date_posted.date() }}</p>
-        <p>{{ post.content | safe }}</p>
+        <p>{{ post.description }}</p>
     {% endfor %}
+    </div>
 {% endblock content %}

@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div>
+    <form action="/posts/edit" method="POST" id="edit_search" name="edit_search" autocomplete="off">
+        <div class="form-group">
+            <input type="text" class="form-control" id="search" name="search" placeholder="Title Search" required>
+        </div>
+        <input type="submit" class="btn btn-primary">
+    </form>
+</div>
+<div>
+    {{ post_list }}
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+    const posts = "{{ post_list }}";
+</script>
+{% endblock scripts %}

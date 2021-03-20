@@ -19,16 +19,21 @@ def create_post(db: Session, post: schema.PostCreate):
 def get_all_posts(db: Session):
     return db.execute(select(Post)).scalars()
 
-def get_post(db: Session, slug: str):
-    obj = db.execute(select(Post).where(Post.slug == slug)).scalar()
+def get_post(db: Session, slug: str = None, post_id: int = None):
+    if slug:
+        obj = db.execute(select(Post).where(Post.slug == slug)).scalar()
+    elif post_id:
+        obj = db.execute(select(Post).where(Post.id == post_id)).scalar()
+        slug = obj.slug
     if not obj:
         return None
-    for file in Path(f'./static/posts/{slug}/').iterdir():
+    content_path = Path(f'./static/posts/{slug}/')
+    for file in content_path.iterdir():
         if 'headerImage' in file.name:
-            img = file
+            img = str(Path(*file.parts[1:]))
         if '.html' in file.name:
             article = file
-    return {'post_obj': obj, 'img_path': img, 'article_path': article}
+    return {'post_obj': obj, 'img_path': img, 'article_path': article, 'content_path': content_path}
 
 def del_post(db: Session, slug: str):
     db.execute(delete(Post).where(Post.slug == slug))

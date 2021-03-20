@@ -106,8 +106,11 @@ Post Editor:
             ✔ Redirect to article page if success @done(21-03-17 22:43)
     ✔ Create post.html template; inputs for json data, article content, and header image @done(21-03-18 23:56)
     ✔ Update crud.get_post and get /posts/slug route for new data; provide new variables to jinja2 @done(21-03-18 23:56)
-    ☐ Create route for editing existing article; /posts/edit
+    ✔ Create route for editing existing article; /posts/edit/{post_id} @done(21-03-19 12:20)
+    Using post_id for route so title can be updated
     ☐ Create edit submission function for when editing existing article
+    ☐ Add edit functionality for header and article info
+    Could use same idea as content editing, but replace with form to submit instead
     
 ✔ Fix image size in post.html @done(21-03-18 23:56)
 ✔ Fix quote block style @done(21-03-19 00:10)
@@ -121,3 +124,7 @@ Post Editor:
 ☐ Change posts on home page to show title, author, date, and description
 
 ☐ Update style of login and registration forms to match submission form
+
+Code Style:
+    ☐ Docstrings on all functions
+    ☐ Docstrings on all routes (will these also appear in the autodocs?)

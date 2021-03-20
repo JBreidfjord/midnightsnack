@@ -18,11 +18,11 @@
 <meta property="og:description" content="{{ article.description }}">
 <meta property="og:locale" content="en">
 <meta property="og:updated_time" content="{{ date }}">
-<meta property="og:image" content="../{{ img_path }}">
+<meta property="og:image" content="{{ url_for('static', path=img_path) }}">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="{{ article.title }}">
 <meta name="twitter:description" content="{{ article.description }}">
-<meta name="twitter:image" content="../{{ img_path }}">
+<meta name="twitter:image" content="{{ url_for('static', path=img_path) }}">
 {% endblock %}
 
 {% block content %}
@@ -35,7 +35,7 @@
                 <small class="text-muted"><a href="/tags/{{ tag.name }}" class="link-secondary">#{{ tag.name }}</a></small>
             {% endfor %}
         </h6>
-        <img src="../{{ img_path }}" alt="{{ article.image_text }}" class="img-fluid">
+        <img src="{{ url_for('static', path=img_path) }}" alt="{{ article.image_text }}" class="img-fluid">
         <small class="text-muted">Photo by <a href="{{ article.photographer_url }}" class="link-secondary">{{ article.photographer_name }}</a></small>
     </div>
     <br>

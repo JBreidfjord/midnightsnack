@@ -129,22 +129,45 @@ def read_current_user(user: User = Depends(auth.verify_token), db: Session = Dep
 
 # CRUD
 # Post Management
-@app.get('/posts/new', response_class=HTMLResponse, dependencies=[Security(auth.verify_token, scopes=['post'])])
-def new_post(request: Request):
-    return templates.TemplateResponse('create_post.html', {'request': request, 'title': 'New Post'})
+@app.get('/posts/edit/{post_id}')
+def edit_post(request: Request, post_id: str, db: Session = Depends(get_db), user: User = Depends(auth.verify_token)):
+    tmp_dir = next(create_tmp())
+    tmp_id = tmp_dir.replace('./tmp/', '')
+    article, img_path, article_path, content_path = crud.get_post(db=db, post_id=post_id).values()
+    with open(article_path) as f:
+        article_html = f.read()
 
-@app.post('/posts/new', response_model=schema.PostInfo)
-def submit_post(title: str = Form(...), post_content: str = Form(...), db: Session = Depends(get_db), user: User = Security(auth.verify_token, scopes=['post'])):
-    post = {'title': title, 'content': post_content, 'user_id': user.id}
-    return crud.create_post(db=db, post=post)
+    for file in Path(content_path).iterdir():
+        shutil.copy(file, Path(tmp_dir).joinpath(file.name))
+    return templates.TemplateResponse('edit_exist.html', {'request': request, 'article_content': article_html, 'img_path': img_path, 'article': article, 'tmp_id': tmp_id, 'author': user.username})
 
-@app.get('/posts/edit')
-def edit_post():
-    pass
-
-@app.post('/posts/edit')
-def submit_edit():
-    pass
+@app.post('/posts/edit/{post_id}')
+def submit_edit(tmp_id: str, db: Session = Depends(get_db), user: User = Depends(auth.verify_token)):
+    # EDIT THIS FUNCTION, THIS IS JUST FROM THE OTHER ROUTE, CHANGE/REMOVE AS NECESSARY
+    tmp_dir = f'./tmp/{tmp_id}'
+    article_files = os.listdir(tmp_dir)
+    with open(f'{tmp_dir}/article.config.json') as f:
+        article_config = json.load(f)
+    article_slug = slugify(article_config['title'], max_length=20)
+    article_path = f'./static/posts/{article_slug}'
+    Path(article_path).mkdir(parents=True, exist_ok=True)
+    for file in article_files:
+        shutil.move(Path(tmp_dir).joinpath(file), Path(article_path).joinpath(file))
+    shutil.rmtree(tmp_dir)
+    
+    data = {
+        'title': article_config['title'],
+        'slug': article_slug,
+        'user_id': user.id,
+        'description': article_config['description'],
+        'image_text': article_config['imageAlt'],
+        'photographer_name': article_config['photographerName'],
+        'photographer_url': article_config['photographerUrl'],
+        'keywords': article_config['keywords'],
+        'tags': [Tag(name=tag) for tag in article_config['tags']]
+    }
+    crud.create_post(db=db, post=data)
+    return JSONResponse({'url': f'/posts/{article_slug}'})
 
 @app.delete('/posts/{slug}', dependencies=[Security(auth.verify_token, scopes=['delete'])])
 def del_post(slug: str, db: Session = Depends(get_db)):
@@ -155,8 +178,7 @@ def del_post(slug: str, db: Session = Depends(get_db)):
 # Post Pages
 @app.get('/posts/{slug}', response_class=HTMLResponse)
 def get_post(request: Request, slug: str, db: Session = Depends(get_db)):
-    article_data = crud.get_post(db=db, slug=slug)
-    article, img_path, content_path = article_data.values()
+    article, img_path, content_path = crud.get_post(db=db, slug=slug).values()
     with open(content_path) as f:
         content = f.read()
     return templates.TemplateResponse('post.html', {'request': request, 'article': article, 'article_content': content, 'img_path': img_path})

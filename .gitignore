@@ -4,5 +4,5 @@
 /db/__pycache__
 scope.py
 /node_modules
-/tmp
 /static/posts
+/static/tmp

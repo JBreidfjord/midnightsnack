@@ -37,7 +37,6 @@ def get_application():
     app.add_event_handler('shutdown', tasks.create_stop_app_handler(app))
 
     app.mount('/static', StaticFiles(directory='static'), name='static') # maybe replace to serve with nginx?
-    app.mount('/tmp', StaticFiles(directory='tmp'), name='tmp')
     return app
 
 app = get_application()
@@ -88,6 +87,7 @@ def login(response: Response, form_data: OAuth2PasswordRequestForm = Depends()):
     response = RedirectResponse(url='/', status_code=303)
     cookie_expires = config.ACCESS_TOKEN_EXPIRE_MINUTES * 60
     response.set_cookie(key='Authorization', value=f'Bearer {access_token}', httponly=True, secure=True, max_age=cookie_expires, expires=cookie_expires)
+    # send another non-secure cookie containing login status
     return response
 
 @app.get('/logout', response_class=RedirectResponse)
@@ -121,6 +121,7 @@ def register(username: str = Form(...), email: str = Form(...), password: str = 
         response = RedirectResponse(url='/register', status_code=303)
         response.delete_cookie(key='Success')
         response.set_cookie(key='Errors', value=error_str, max_age=30, expires=30)
+        # add cookies when you register
         return response
 
 # Users
@@ -145,7 +146,7 @@ def edit_post(request: Request, post_id: str, db: Session = Depends(get_db)):
 
 @app.post('/posts/edit/{post_id}', dependencies=[Security(auth.verify_token, scopes=['edit'])])
 def submit_edit(post_id: int, tmp_id: str = Body(..., embed=True), db: Session = Depends(get_db)):
-    tmp_dir = Path(f'./tmp/{tmp_id}')
+    tmp_dir = Path(f'./static/tmp/{tmp_id}')
     with open(f'{tmp_dir}/article.config.json') as f:
         article_config = json.load(f)
     article_slug = slugify(article_config['title'], max_length=20)
@@ -189,10 +190,9 @@ def get_docs():
 # Editing/MD-HTML
 def create_tmp():
     tmp_id = str(token_hex(8))
-    tmp_dir = f'./tmp/{tmp_id}'
-    Path(tmp_dir).mkdir()
+    tmp_dir = f'./static/tmp/{tmp_id}'
+    Path(tmp_dir).mkdir(parents=True, exist_ok=False)
     yield tmp_dir
-
 
 def escape_html(file: Path, unescape: bool = False):
     with open(file, 'r+') as f:
@@ -205,16 +205,19 @@ def escape_html(file: Path, unescape: bool = False):
         f.write(esc_content)
         f.truncate()
 
+
 @app.get('/posts/edit', response_class=HTMLResponse, dependencies=[Security(auth.verify_token, scopes=['edit'])])
 def search_posts(request: Request, db: Session = Depends(get_db)):
     post_list = [post.title for post in crud.get_all_posts(db=db)]
     return templates.TemplateResponse('edit_search.html', {'request': request, 'post_list': post_list})
+
 
 @app.post('/posts/edit', response_class=RedirectResponse, dependencies=[Security(auth.verify_token, scopes=['edit'])])
 def redir_edit(search: str = Form(...), db: Session = Depends(get_db)):
     slug = slugify(search)
     post = crud.get_post(slug=slug, db=db)['post_obj']
     return RedirectResponse(f'/posts/edit/{post.id}')
+
 
 @app.get('/posts/create', response_class=HTMLResponse, dependencies=[Security(auth.verify_token, scopes=['post'])])
 def upload_input(request: Request):
@@ -242,6 +245,8 @@ def upload(
         json.dump({'title': title, 'description': description, 'author': user.username, 'date': date, 'tags': tag_list, 'imageAlt': img_alt, 'photographerName': pg_name, 'photographerUrl': pg_url, 'keywords': tags.replace(' ', '')},
             f, indent=4)
 
+    tmp_id = tmp_dir.replace('./static/tmp/', '')
+
     img_ext = filetype.guess_extension(img_file)
     if not img_ext:
         img_ext = 'png'
@@ -249,10 +254,9 @@ def upload(
     with open(img_path, 'wb') as f:
         f.write(img_file)
 
-    tmp_id = tmp_dir.replace('./tmp/', '')
     with open(f'{tmp_dir}/article.md', 'wb') as f:
         f.write(article_file)
-    escape_html(file=(Path(f'./tmp/{tmp_id}/article.md')), unescape=True)
+    escape_html(file=(Path(f'{tmp_dir}/article.md')), unescape=True)
     cmd = f"""node -e 'require("./md-html.js").convert("{tmp_dir}")'"""
     subprocess.run(cmd, shell=True)
 
@@ -270,22 +274,23 @@ def upload(
         'keywords': tags.replace(' ', ''),
         'tags': [Tag(name=tag) for tag in tags.replace(' ', '').split(',')]
     }
+    img_path = f'/tmp/{tmp_id}/headerImage.{img_ext}'
     return templates.TemplateResponse('edit.html', {'request': request, 'article_content': article_html, 'img_path': img_path, 'article': article, 'tmp_id': tmp_id, 'author': user.username})
 
 
 @app.get('/edit/{tmp_id}', response_class=FileResponse, dependencies=[Security(auth.verify_token, scopes=['edit'])])
 def get_article_md(tmp_id: str):
-    escape_html(file=(Path(f'./tmp/{tmp_id}/article.md')))
-    return FileResponse(f'./tmp/{tmp_id}/article.md')
+    escape_html(file=(Path(f'./static/tmp/{tmp_id}/article.md')))
+    return FileResponse(f'./static/tmp/{tmp_id}/article.md')
 
 
 @app.post('/edit/{tmp_id}', response_class=FileResponse, dependencies=[Security(auth.verify_token, scopes=['edit'])])
 def convert_edit(tmp_id: str, article_md: bytes = File(...)):
-    tmp_dir = f'./tmp/{tmp_id}'
+    tmp_dir = f'./static/tmp/{tmp_id}'
     with open(f'{tmp_dir}/article.md', 'wb') as f:
         f.write(article_md)
     
-    escape_html(file=(Path(f'./tmp/{tmp_id}/article.md')), unescape=True)
+    escape_html(file=(Path(f'./static/tmp/{tmp_id}/article.md')), unescape=True)
     cmd = f"""node -e 'require("./md-html.js").convert("{tmp_dir}")'"""
     subprocess.run(cmd, shell=True)
     return FileResponse(f'{tmp_dir}/article.html')
@@ -293,7 +298,7 @@ def convert_edit(tmp_id: str, article_md: bytes = File(...)):
 
 @app.post('/submit/{tmp_id}', response_class=JSONResponse, dependencies=[Security(auth.verify_token, scopes=['post'])])
 def submit_article(tmp_id: str, db: Session = Depends(get_db)):
-    tmp_dir = Path(f'./tmp/{tmp_id}')
+    tmp_dir = Path(f'./static/tmp/{tmp_id}')
     with open(f'{tmp_dir}/article.config.json') as f:
         article_config = json.load(f)
     article_slug = slugify(article_config['title'], max_length=20)
@@ -302,7 +307,7 @@ def submit_article(tmp_id: str, db: Session = Depends(get_db)):
     for file in tmp_dir.iterdir():
         shutil.move(file, article_path.joinpath(file.name))
     shutil.rmtree(tmp_dir)
-    author_id = db.execute(select(User.id).where(User.username == article_config['author']))
+    author_id = db.execute(select(User.id).where(User.username == article_config['author'])).scalar()
     
     data = {
         'title': article_config['title'],
@@ -312,10 +317,10 @@ def submit_article(tmp_id: str, db: Session = Depends(get_db)):
         'image_text': article_config['imageAlt'],
         'photographer_name': article_config['photographerName'],
         'photographer_url': article_config['photographerUrl'],
-        'keywords': article_config['keywords'],
-        'tags': [Tag(name=tag) for tag in article_config['tags']]
+        'keywords': article_config['keywords']
     }
-    crud.create_post(db=db, post=data)
+    tags = [Tag(name=tag) for tag in article_config['tags']]
+    crud.create_post(db=db, post=data, tags=tags)
     return JSONResponse({'url': f'/posts/{article_slug}'})
 
 # Post Pages

@@ -31,8 +31,8 @@ class User(Base):
 class Post(Base):
     __tablename__ = 'posts'
     id = Column(Integer, primary_key=True)
-    title = Column(String(100), nullable=False)
-    slug = Column(String(20), nullable=False, default=slug_default, onupdate=slug_default)
+    title = Column(String(100), nullable=False, unique=True)
+    slug = Column(String(20), nullable=False, default=slug_default, onupdate=slug_default, unique=True)
     date_posted = Column(DateTime, nullable=False, default=datetime.today().strftime('%Y-%m-%d'))
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     description = Column(String)
@@ -49,6 +49,6 @@ class Post(Base):
 class Tag(Base):
     __tablename__ = 'tags'
     id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False, unique=True)
+    name = Column(String, nullable=False)
 
     posts = relationship('Post', secondary=tag_assoc_table, back_populates='tags')

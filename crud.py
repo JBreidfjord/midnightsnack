@@ -1,19 +1,35 @@
 from sqlalchemy import select, delete, update, insert
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
-from models import User, Post, Tag
+from sqlalchemy.exc import DataError, IntegrityError
+from models import User, Post, Tag, tag_assoc_table
 from typing import List
 from pathlib import Path
 import schema, shutil
 
 
 # Post
-def create_post(db: Session, post: schema.PostCreate):
-    '''Creates an instance of the Post class, taking the database session and post info defined by the schema as inputs'''
-    print(post)
+def tag_handler(db: Session, tags: List[Tag], post: Post):
+    for tag in tags:
+        tag_obj = db.execute(select(Tag).where(Tag.name == tag.name)).scalar()
+        if not tag_obj:
+            tag.posts.append(post)
+            db.add(tag)
+            db.commit()
+        else:
+            tag_id = db.execute(select(Tag.id).where(Tag.name == tag.name)).scalar()
+            post_id = db.execute(select(Post.id).where(Post.title == post.title)).scalar()
+            db.execute(insert(tag_assoc_table).values(post_id=post_id, tag_id=tag_id))
+            db.commit()
+
+def create_post(db: Session, post: schema.PostCreate, tags: List[Tag]):
+    '''
+    Creates an instance of the Post class, taking the database session and post info defined by the schema as inputs
+    Tags must be a list of Tag objects
+    '''
     obj = Post(**post)
     db.add(obj)
     db.commit()
+    tag_handler(db=db, tags=tags, post=obj)
     return obj
 
 def get_all_posts(db: Session):

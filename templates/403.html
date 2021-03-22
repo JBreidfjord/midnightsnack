@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h2>403: Not Authenticated</h2>
+<br>
+<p>Sorry, you don't have permission to access that</p>
+<a href="/">Click here to go back home</a>
+<br><br>
+<div>
+    <h5>Error details:</h5>
+    <p>{{ exc.detail }}</p>
+</div>
+{% endblock content %}

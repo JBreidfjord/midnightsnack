@@ -9,6 +9,7 @@ import schema, shutil
 
 # Post
 def tag_handler(db: Session, tags: List[Tag], post: Post):
+    post_id = db.execute(select(Post.id).where(Post.title == post.title)).scalar()
     for tag in tags:
         tag_obj = db.execute(select(Tag).where(Tag.name == tag.name)).scalar()
         if not tag_obj:
@@ -17,7 +18,6 @@ def tag_handler(db: Session, tags: List[Tag], post: Post):
             db.commit()
         else:
             tag_id = db.execute(select(Tag.id).where(Tag.name == tag.name)).scalar()
-            post_id = db.execute(select(Post.id).where(Post.title == post.title)).scalar()
             try:
                 db.execute(insert(tag_assoc_table).values(post_id=post_id, tag_id=tag_id))
                 db.commit()

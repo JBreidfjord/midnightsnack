@@ -18,8 +18,18 @@ def tag_handler(db: Session, tags: List[Tag], post: Post):
         else:
             tag_id = db.execute(select(Tag.id).where(Tag.name == tag.name)).scalar()
             post_id = db.execute(select(Post.id).where(Post.title == post.title)).scalar()
-            db.execute(insert(tag_assoc_table).values(post_id=post_id, tag_id=tag_id))
+            try:
+                db.execute(insert(tag_assoc_table).values(post_id=post_id, tag_id=tag_id))
+                db.commit()
+            except IntegrityError:
+                db.rollback()
+    old_tags = db.execute(select(Post).where(Post.id == post_id)).scalar().tags
+    tag_names = [tag.name for tag in tags]
+    for old_tag in old_tags:
+        if old_tag.name not in tag_names:
+            db.execute(delete(tag_assoc_table).where(Post.id == post_id).where(Tag.id == old_tag.id))
             db.commit()
+
 
 def create_post(db: Session, post: schema.PostCreate, tags: List[Tag]):
     '''
@@ -60,9 +70,12 @@ def del_post(db: Session, slug: str):
     db.commit()
     shutil.rmtree(Path(f'./static/posts/{slug}'))
 
-def edit_post(db: Session, post_id: int, data: dict):
+def edit_post(db: Session, post_id: int, data: dict, tags: List[Tag]):
     db.execute(update(Post).where(Post.id == post_id).values(**data))
     db.commit()
+
+    post = db.execute(select(Post).where(Post.id == post_id)).scalar()
+    tag_handler(db=db, tags=tags, post=post)
 
 # Tags
 def create_tag(db: Session, tags: List[str]):

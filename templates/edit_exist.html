@@ -46,7 +46,6 @@
                 axios.post("/posts/edit/{{ article.id }}", {tmp_id: "{{ tmp_id }}"})
                 .then(function (response) {
                     console.log(response);
-                    alert(response.data);
                     if (response.status == 200) {
                         window.location = response.data.url
                     }

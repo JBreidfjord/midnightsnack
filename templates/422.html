@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h2>422: Invalid Request</h2>
+<br>
+<p>Sorry, the content you submitted was invalid</p>
+<p>If this continues to occur, please report it via the contact page</p>
+<a href="/">Click here to go back home</a>
+<br><br>
+<div>
+    <h5>Error details:</h5>
+    <p>{{ exc.detail }}</p>
+    <pre><code>{{ exc.body }}</code></pre>
+</div>
+{% endblock content %}

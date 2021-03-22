@@ -64,8 +64,7 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 def get_user(db: Session, username: str):
-    db_user = db.execute(select(User).where(User.username == username)).scalar()
-    user = schema.UserInfo.from_orm(db_user)
+    user = db.execute(select(User).where(User.username == username)).scalar()
     return user
 
 def authenticate_user(db: Session, username: str, password: str):

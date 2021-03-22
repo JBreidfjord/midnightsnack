@@ -1,11 +1,13 @@
-from fastapi import FastAPI, Request, Form, Depends, HTTPException, Query, status, Security, File, Body
+from fastapi import FastAPI, Request, Form, Depends, Query, status, Security, File, Body
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, Response, RedirectResponse, JSONResponse, FileResponse
+from fastapi.exceptions import RequestValidationError, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.openapi.utils import get_openapi
 from fastapi.openapi.docs import get_swagger_ui_html
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from sqlalchemy import select
@@ -44,6 +46,30 @@ app = get_application()
 Base.metadata.create_all(bind=engine)
 
 templates = Jinja2Templates(directory='templates')
+
+# Exception Handlers
+@app.exception_handler(RequestValidationError)
+@app.exception_handler(Exception)
+@app.exception_handler(HTTPException)
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request, exc):
+    try:
+        if exc.status_code == 401:
+            response = RedirectResponse(url='/login', status_code=303)
+            response.set_cookie(key='Errors', value=True, max_age=30, expires=30)
+            return response
+        if exc.status_code == 403:
+            return templates.TemplateResponse('403.html', {'request': request, 'exc': exc}, status_code=403)
+        if exc.status_code == 404:
+            return templates.TemplateResponse('404.html', {'request': request, 'exc': exc}, status_code=404)
+        if exc.status_code == 422:
+            return templates.TemplateResponse('422.html', {'request': request, 'exc': exc}, status_code=422)
+        if exc.status_code == 500:
+            return templates.TemplateResponse('500.html', {'request': request, 'exc': exc}, status_code=500)
+        else:
+            return templates.TemplateResponse('error.html', {'request': request, 'exc': exc}, status_code=exc.status_code)
+    except AttributeError:
+        return templates.TemplateResponse('500.html', {'request': request, 'exc': exc}, status_code=500)
     
 # Functions
 def get_post_obj(db: Session, slug: str):
@@ -86,6 +112,7 @@ def login(response: Response, form_data: OAuth2PasswordRequestForm = Depends()):
     )
     response = RedirectResponse(url='/', status_code=303)
     cookie_expires = config.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    response.delete_cookie(key='Errors')
     response.set_cookie(key='Authorization', value=f'Bearer {access_token}', httponly=True, secure=True, max_age=cookie_expires, expires=cookie_expires)
     response.set_cookie(key='User', value=user.username, max_age=cookie_expires, expires=cookie_expires)
     response.set_cookie(key='Scopes', value=user.scopes, max_age=cookie_expires, expires=cookie_expires)
@@ -338,7 +365,10 @@ def submit_article(tmp_id: str, db: Session = Depends(get_db)):
 # Post Pages
 @app.get('/posts/{slug}', response_class=HTMLResponse)
 def get_post(request: Request, slug: str, db: Session = Depends(get_db)):
-    article, img_path, article_path, content_path = crud.get_post(db=db, slug=slug).values()
+    post = crud.get_post(db=db, slug=slug)
+    if not post:
+        raise HTTPException(status_code=404, detail='Post not found')
+    article, img_path, article_path, content_path = post.values()
     with open(article_path) as f:
         content = f.read()
     return templates.TemplateResponse('post.html', {'request': request, 'article': article, 'article_content': content, 'img_path': img_path})
@@ -351,3 +381,10 @@ def get_tags(request: Request, tag: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail='Tag not found')
     else:
         return templates.TemplateResponse('tag.html', {'request': request, 'tag': tag})
+
+@app.get('/test')
+def exc_test():
+    for x in 4:
+        pass
+
+    return 4

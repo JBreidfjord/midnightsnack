@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h2>Unknown Error</h2>
+<br>
+<p>Sorry, something went wrong!</p>
+<p>Even I don't know what it is!</p>
+<a href="{{ url_for('contact') }}">Click here to contact me and report the error</a>
+<br>
+<a href="/">Or click here to go back home</a>
+<br><br>
+<div>
+    <h5>Error details:</h5>
+    <p>Status Code: {{ exc.status_code }}</p>
+    <p>Detail: {{ exc.detail }}</p>
+</div>
+{% endblock content %}

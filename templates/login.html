@@ -4,12 +4,10 @@
 <div class="container">
     <form name="formdata" class="row g-3" method="POST" action="">
         <legend class="border-bottom mb-4">Login to Your Account</legend>
-        {% if errors %}
+        {% if request.cookies.get('Errors') %}
             <div class="error">
                 <ul>
-                    {% for error in errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
+                    <li>Incorrect username or password</li>
                 </ul>
             </div>
         {% endif %}

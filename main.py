@@ -381,10 +381,3 @@ def get_tags(request: Request, tag: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail='Tag not found')
     else:
         return templates.TemplateResponse('tag.html', {'request': request, 'tag': tag})
-
-@app.get('/test')
-def exc_test():
-    for x in 4:
-        pass
-
-    return 4

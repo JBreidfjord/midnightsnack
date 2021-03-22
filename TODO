@@ -25,12 +25,11 @@ Authentication:
     ✔ Connect to database @done(21-03-12 14:19)
     ✔ Set redirects for login route @done(21-03-17 17:45)
     ✔ Lock certain routes behind authentication @done(21-03-17 17:45)
-    ☐ Change navbar based on login status
+    ✔ Change navbar based on login status @done(21-03-21 21:58)
     Could apply global dependency to check user status, maybe just check if they have an auth cookie? less overhead than checking db that way
     ✔ Logout route/function @done(21-03-13 14:37)
     ✔ Logout button in navbar @done(21-03-13 14:37)
     ✔ Set up redirects for logout route @done(21-03-17 17:45)
-    ☐ Move all auth related stuff to auth.py
     Update database to store tokens and hashed passwords:
         ✔ Change input functions to hash before storing @done(21-03-13 15:46)
         ✔ Update existing data @done(21-03-13 15:46)
@@ -66,7 +65,7 @@ Post Editor:
         ✔ Generate date from datetime.today().strftime('%Y-%m-%d') @done(21-03-17 22:44)
         ✔ Generate keywords from tags @done(21-03-17 22:44)
         ☐ Validation for form data
-        Title can't be 'create' or 'edit'
+        Title can't be 'create' or 'edit' or 'all'
         Title can't already exist
         Tags must be single words each
         Files must be proper type
@@ -82,7 +81,7 @@ Post Editor:
         ✔ Post /submit/{tmp_id}; server function moves files from tmp_dir to permanent dir then removes tmp_dir @done(21-03-17 09:31)
         ✔ Commit submitted post to database @done(21-03-18 21:55)
         ✔ Return article url @done(21-03-17 22:43)
-        ☐ Add auth dependencies
+        ✔ Add auth dependencies @done(21-03-21 21:42)
     JS Functions:
         Edit Article:
             ✔ Button with click function @done(21-03-17 12:01)
@@ -116,8 +115,9 @@ Post Editor:
     Display search bar (with autocompletion) to search by post title
     ☐ Posts in edit search page should sort alphabetically
 
-☐ Add 'All' option to posts dropdown
-☐ Create page with all posts listed
+✔ Add 'All' option to posts dropdown @done(21-03-21 21:42)
+✔ Create page with all posts listed @done(21-03-21 21:49)
+☐ Categorize to month/year or similar
 ☐ Limit homepage to recent 10 posts then link for all posts there as well
 ☐ Homepage should be sorted by most recent date
 
@@ -141,6 +141,7 @@ Clean Up:
     ☐ Remove posts folders no longer matching a post in the database
 
 ☐ Change posts on home page to show title, author, date, and description
+☐ Finish user pages
 
 ☐ Update style of login and registration forms to match submission form
 
@@ -152,3 +153,4 @@ Code Style:
     ☐ Docstrings on all routes (will these also appear in the autodocs?)
     ☐ Consistency for use of 'post' vs 'article', just use post
     ☐ Add error handling to functions
+    ☐ Separate JS functions from HTML files

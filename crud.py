@@ -92,4 +92,4 @@ def create_tag(db: Session, tags: List[str]):
 
 # User
 def get_user(db: Session, username: str):
-    pass
+    return db.execute(select(User).where(User.username == username)).scalar()

@@ -35,8 +35,10 @@
                 <small class="text-muted"><a href="/tags/{{ tag.name }}" class="link-secondary">#{{ tag.name }}</a></small>
             {% endfor %}
         </h6>
-        <img src="{{ url_for('static', path=img_path) }}" alt="{{ article.image_text }}" class="img-fluid">
-        <small class="text-muted">Photo by <a href="{{ article.photographer_url }}" class="link-secondary">{{ article.photographer_name }}</a></small>
+        <figure class="figure">
+            <img src="{{ url_for('static', path=img_path) }}" alt="{{ article.image_text }}" class="img-fluid figure-img">
+            <figcaption class="figure-caption text-end">Photo by <a href="{{ article.photographer_url }}" class="link-secondary">{{ article.photographer_name }}</a></figcaption>
+        </figure>
     </div>
     <br>
     <div class="article-content">

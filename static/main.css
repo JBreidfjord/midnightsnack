@@ -4,7 +4,7 @@ body {
     font-family: 'Work Sans', sans-serif;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1, h2, h3, h4, h5, h6, legend {
     color: #e8e6e3;
     font-family: 'Space Mono', monospace;
 }
@@ -58,4 +58,20 @@ blockquote {
 .dropdown-menu {
     background: #131516;
     color: #d8d4cf;
+    border: 1px solid #d8d4cf;
+}
+
+.btn-outline-primary {
+    color: #b9aa4c;
+    border-color: #b9aa4c;
+}
+
+.btn-outline-primary:focus, .btn-outline-primary:active:focus {
+    box-shadow: 0 0 0 0.25rem #b9aa4c7c;
+}
+
+.btn-outline-primary:active, .btn-outline-primary:hover {
+    color: inherit;
+    background-color: #b9aa4c;
+    border-color: #b9aa4c;
 }

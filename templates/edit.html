@@ -2,12 +2,13 @@
 
 {% block content %}
 {{ super() }}
-    {% block article %}
-    <div id="editable-article-content" class="editable-article-content">
-        {{ super() }}
-    </div>
-    {% endblock article %}
 {% endblock content %}
+
+{% block article %}
+<div id="editable-article-content" class="editable-article-content">
+    {{ super() }}
+</div>
+{% endblock article %}
 
 {% block right_side_content %}
 <div class="btn-group-vertical btn-group-sm position-fixed" id="editor-submit" role="group" aria-label="Editor button group">

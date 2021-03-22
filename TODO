@@ -46,8 +46,7 @@ Auto-blog:
     ✔ Convert markdown to HTML @done(21-03-20 10:16)
     ✔ Create post @done(21-03-20 10:16)
 
-New features:
-    ☐ Custom 404/status pages
+✔ Custom 404/status pages @done(21-03-22 13:34)
 
 ✔ Change User schemas, base should contain only import info like username, email, image @done(21-03-13 13:48)
 
@@ -136,16 +135,12 @@ Post Editor:
 ☐ Add archive function
 Del will remove from db and drive, archive will set archived to true in db and keeps folder on drive
 
-Clean Up:
-    Scheduled function to clean up data/files
-    ☐ Remove posts folders no longer matching a post in the database
-
 ☐ Change posts on home page to show title, author, date, and description
 ☐ Finish user, tag, and admin pages
 
 ✔ Update style of login and registration forms to match submission form @done(21-03-21 22:14)
 
-☐ Redirect from login/register if already logged in
+✔ Redirect from login/register if already logged in @done(21-03-22 13:38)
 
 Code Style:
     ☐ Split routes between different router modules

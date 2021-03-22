@@ -94,8 +94,10 @@ def contact(request: Request):
 
 # Authentication
 @app.get('/login', response_class=HTMLResponse)
-def login(request: Request, errors: Optional[List[str]] = Query(None), success: Optional[bool] = Query(None)):
-    return templates.TemplateResponse('login.html', {'request': request, 'title': 'Login', 'errors': errors, 'success': success})
+def login(request: Request):
+    if request.cookies.get('Authorization'):
+        return RedirectResponse(url='/', status_code=303)
+    return templates.TemplateResponse('login.html', {'request': request, 'title': 'Login',})
 
 @app.post('/login', response_class=RedirectResponse)
 def login(response: Response, form_data: OAuth2PasswordRequestForm = Depends()):
@@ -128,6 +130,8 @@ def logout(response: Response):
 
 @app.get('/register', response_class=HTMLResponse)
 def register(request: Request):
+    if request.cookies.get('Authorization'):
+        return RedirectResponse(url='/', status_code=303)
     return templates.TemplateResponse('register.html', {'request': request, 'title': 'Register'})
 
 @app.post('/register', response_class=RedirectResponse)

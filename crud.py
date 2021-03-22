@@ -66,6 +66,8 @@ def get_post(db: Session, slug: str = None, post_id: int = None):
     return {'post_obj': obj, 'img_path': img, 'article_path': article, 'content_path': content_path}
 
 def del_post(db: Session, slug: str):
+    post_id = db.execute(select(Post.id).where(Post.slug == slug)).scalar()
+    db.execute(delete(tag_assoc_table).where(Post.id == post_id))
     db.execute(delete(Post).where(Post.slug == slug))
     db.commit()
     shutil.rmtree(Path(f'./static/posts/{slug}'))

@@ -67,6 +67,9 @@ Post Editor:
         ✔ Generate keywords from tags @done(21-03-17 22:44)
         ☐ Validation for form data
         Title can't be 'create' or 'edit'
+        Title can't already exist
+        Tags must be single words each
+        Files must be proper type
     Route Functions:
         ✔ Get upload page, return HTMLResponse of submission page @done(21-03-16 22:47)
         ✔ Process submission data into config.json @done(21-03-17 22:39)
@@ -104,19 +107,21 @@ Post Editor:
             ✔ Redirect to article page if success @done(21-03-17 22:43)
     ✔ Create post.html template; inputs for json data, article content, and header image @done(21-03-18 23:56)
     ✔ Update crud.get_post and get /posts/slug route for new data; provide new variables to jinja2 @done(21-03-18 23:56)
-    ✔ Create route for editing existing article; /posts/edit/{post_id} @done(21-03-19 12:20)
-    Using post_id for route so title can be updated
+    ✔ Create route for editing existing article; /posts/edit/{slug} @done(21-03-19 12:20)
     ✔ Create edit submission function for when editing existing article @done(21-03-20 10:52)
     ☐ Add edit functionality for header and article info
     Could use same idea as content editing, but replace with form to submit instead
     ✔ Create /posts/edit function @done(21-03-20 12:40)
-    ☐ Create edit_search.html
-    Display search bar (with autocompletion) to search by post title, submit takes you to /posts/edit/{post_id}
-    
+    ✔ Create edit_search.html @done(21-03-21 18:59)
+    Display search bar (with autocompletion) to search by post title
+    ☐ Posts in edit search page should sort alphabetically
+
 ☐ Add 'All' option to posts dropdown
 ☐ Create page with all posts listed
 ☐ Limit homepage to recent 10 posts then link for all posts there as well
+☐ Homepage should be sorted by most recent date
 
+☐ Replace tmp_dir/tmp_id paths with url_path_for()
 ☐ Split crud.get_post function
 ✔ Update route order to allow priority to /posts/create and /posts/edit priority @done(21-03-20 10:52)
 ✔ Fix image size in post.html @done(21-03-18 23:56)
@@ -127,9 +132,6 @@ Post Editor:
 ☐ Add /tags/{tag} route
 ☐ Get matching posts from db
 ☐ HTMLResponse, list all posts matching tag
-
-☐ Add scrollspy on posts
-Generate table of contents based on headers in article, scrollspy to highlight
 
 ☐ Add archive function
 Del will remove from db and drive, archive will set archived to true in db and keeps folder on drive

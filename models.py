@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, ForeignKey, Boolean, DateTime, Text, PickleType, Table
+from sqlalchemy import Column, String, Integer, ForeignKey, Boolean, DateTime, PickleType, Table, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
 from datetime import datetime
 from slugify import slugify
@@ -10,7 +10,8 @@ def slug_default(context):
 
 tag_assoc_table = Table('association', Base.metadata,
     Column('post_id', Integer, ForeignKey('posts.id')),
-    Column('tag_id', Integer, ForeignKey('tags.id'))
+    Column('tag_id', Integer, ForeignKey('tags.id')),
+    UniqueConstraint('post_id', 'tag_id')
 )
 
 class User(Base):
@@ -49,6 +50,6 @@ class Post(Base):
 class Tag(Base):
     __tablename__ = 'tags'
     id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=False, unique=True)
 
     posts = relationship('Post', secondary=tag_assoc_table, back_populates='tags')

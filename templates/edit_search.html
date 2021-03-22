@@ -2,20 +2,48 @@
 
 {% block content %}
 <div>
-    <form action="/posts/edit" method="POST" id="edit_search" name="edit_search" autocomplete="off">
-        <div class="form-group">
+    <br>
+    <form action="/posts/edit" method="POST" class="row" id="edit_search" name="edit_search" autocomplete="off">
+        <div class="col"></div>
+        <div class="col-12">
             <input type="text" class="form-control" id="search" name="search" placeholder="Title Search" required>
+            <br>
+            <div id="search-results">
+            </div>
         </div>
-        <input type="submit" class="btn btn-primary">
+        <div class="col"></div>
     </form>
-</div>
-<div>
-    {{ post_list }}
 </div>
 {% endblock content %}
 
 {% block scripts %}
 <script>
-    const posts = "{{ post_list }}";
+    $(document).ready(function(){
+        const posts = JSON.parse('{{ posts | tojson }}')
+        const input = document.querySelector("input");
+        const searchResults = document.getElementById("search-results")
+        let postMatch = posts;
+        
+        updateResults();
+        input.addEventListener("input", updateSearch);
+
+        function updateSearch(e) {
+            postMatch = posts.filter(post => post.title.toLowerCase().startsWith(e.target.value.toLowerCase()));
+            updateResults();
+        };
+
+        function updateResults() {
+            let fragment = document.createDocumentFragment();
+            searchResults.innerHTML = "";
+            postMatch.forEach(function(post) {
+                let a = document.createElement("a");
+                a.textContent = post.title;
+                a.href = `/posts/edit/${post.id}`
+                a.className = "dropdown-item"
+                fragment.appendChild(a);
+            });
+            searchResults.appendChild(fragment);
+        };
+    });
 </script>
 {% endblock scripts %}

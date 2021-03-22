@@ -87,13 +87,16 @@ def login(response: Response, form_data: OAuth2PasswordRequestForm = Depends()):
     response = RedirectResponse(url='/', status_code=303)
     cookie_expires = config.ACCESS_TOKEN_EXPIRE_MINUTES * 60
     response.set_cookie(key='Authorization', value=f'Bearer {access_token}', httponly=True, secure=True, max_age=cookie_expires, expires=cookie_expires)
-    # send another non-secure cookie containing login status
+    response.set_cookie(key='User', value=user.username, max_age=cookie_expires, expires=cookie_expires)
+    response.set_cookie(key='Scopes', value=user.scopes, max_age=cookie_expires, expires=cookie_expires)
     return response
 
 @app.get('/logout', response_class=RedirectResponse)
 def logout(response: Response):
     response = RedirectResponse(url='/', status_code=303)
     response.delete_cookie(key='Authorization')
+    response.delete_cookie(key='User')
+    response.delete_cookie(key='Scopes')
     return response
 
 @app.get('/register', response_class=HTMLResponse)
@@ -113,7 +116,7 @@ def register(username: str = Form(...), email: str = Form(...), password: str = 
         db.commit()
         response = RedirectResponse(url='/register', status_code=303)
         response.delete_cookie(key='Errors')
-        response.set_cookie(key='Success', value=True, max_age=30, expires=30)
+        response.set_cookie(key='Success', value=user.username, max_age=30, expires=30)
         return response
     except ValidationError as exception:
         errors = [error['msg'] for error in exception.errors()]
@@ -121,14 +124,19 @@ def register(username: str = Form(...), email: str = Form(...), password: str = 
         response = RedirectResponse(url='/register', status_code=303)
         response.delete_cookie(key='Success')
         response.set_cookie(key='Errors', value=error_str, max_age=30, expires=30)
-        # add cookies when you register
         return response
 
 # Users
-@app.get('/users/me')
-def read_current_user(user: User = Depends(auth.verify_token), db: Session = Depends(get_db)):
-    # get user data from db
-    return user.username
+@app.get('/users/{username}', response_class=HTMLResponse)
+def read_current_user(request: Request, username: str, db: Session = Depends(get_db)):
+    user = crud.get_user(db=db, username=username)
+    return templates.TemplateResponse('user.html', {'request': request, 'user': user})
+
+
+@app.get('/posts/all', response_class=HTMLResponse)
+def get_all_posts(request: Request, db: Session = Depends(get_db)):
+    posts = crud.get_all_posts(db=db)
+    return templates.TemplateResponse('postlist.html', {'request': request, 'posts': posts})
 
 # CRUD
 # Post Management

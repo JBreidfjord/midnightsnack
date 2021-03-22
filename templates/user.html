@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>{{ user.username }}</h2>
+    <br>
+    {% for post in user.posts %}
+    <p><a href='/posts/{{ post.slug }}'>{{ post.title }}</a></p>
+    {% endfor %}
+</div>
+{% endblock content %}

@@ -16,7 +16,7 @@
         {% elif request.cookies.get('Success') %}
             <div class="success">
                 <ul>
-                    <li>Registration successful. Welcome, /insert current user/!</li>
+                    <p>Registration successful. Welcome, {{ request.cookies.get('Success') }}! You may now log in.</p>
                 </ul>
             </div>
         {% endif %}

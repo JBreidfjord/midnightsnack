@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div class="container" id="post-list">
+    {% for post in posts %}
+        <h5><a href='/posts/{{ post.slug }}'>{{ post.title }}</a></h5>
+        <p>By {{ post.author.username }} on {{ post.date_posted.date() }}</p>
+        <p>{{ post.description }}</p>
+    {% endfor %}
+    </div>
+{% endblock content %}

@@ -147,6 +147,11 @@ def del_post(slug: str, db: Session = Depends(get_db)):
     return {'detail': 'Post deleted', 'status_code': 204}
 
 # Docs
+@app.get('/admin', dependencies=[Security(auth.verify_token, scopes=['admin'])], response_class=HTMLResponse)
+def admin(request: Request, db: Session = Depends(get_db)):
+    # set up scope setting function
+    return templates.TemplateResponse('admin.html', {'request': request})
+
 @app.get('/openapi.json', dependencies=[Security(auth.verify_token, scopes=['admin'])])
 def get_openapi_json():
     return JSONResponse(get_openapi(title=config.PROJECT_NAME, version=config.VERSION, routes=app.routes))
@@ -337,3 +342,12 @@ def get_post(request: Request, slug: str, db: Session = Depends(get_db)):
     with open(article_path) as f:
         content = f.read()
     return templates.TemplateResponse('post.html', {'request': request, 'article': article, 'article_content': content, 'img_path': img_path})
+
+
+@app.get('/tags/{tag}', response_class=HTMLResponse)
+def get_tags(request: Request, tag: str, db: Session = Depends(get_db)):
+    tag = db.execute(select(Tag).where(Tag.name == tag)).scalar()
+    if not tag:
+        raise HTTPException(status_code=404, detail='Tag not found')
+    else:
+        return templates.TemplateResponse('tag.html', {'request': request, 'tag': tag})

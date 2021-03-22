@@ -129,9 +129,9 @@ Post Editor:
 ☐ Change article header style
 ☐ Add href to author page in post.html
 
-☐ Add /tags/{tag} route
-☐ Get matching posts from db
-☐ HTMLResponse, list all posts matching tag
+✔ Add /tags/{tag} route @done(21-03-21 22:10)
+✔ Get matching posts from db @done(21-03-21 22:10)
+✔ HTMLResponse, list all posts matching tag @done(21-03-21 22:10)
 
 ☐ Add archive function
 Del will remove from db and drive, archive will set archived to true in db and keeps folder on drive
@@ -141,9 +141,11 @@ Clean Up:
     ☐ Remove posts folders no longer matching a post in the database
 
 ☐ Change posts on home page to show title, author, date, and description
-☐ Finish user pages
+☐ Finish user, tag, and admin pages
 
-☐ Update style of login and registration forms to match submission form
+✔ Update style of login and registration forms to match submission form @done(21-03-21 22:14)
+
+☐ Redirect from login/register if already logged in
 
 Code Style:
     ☐ Split routes between different router modules

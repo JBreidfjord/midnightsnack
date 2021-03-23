@@ -4,8 +4,8 @@
 <div class="container">
     <h2>{{ user.username }}</h2>
     <br>
-    {% for post in user.posts %}
-    <p><a href="/posts/{{ post.slug }}">{{ post.title }}</a></p>
+    {% for post in user.posts|sort(attribute="date_posted", reverse=true) %}
+        <a href="/posts/{{ post.slug }}">{{ post.title }}</a><br>
     {% endfor %}
 </div>
 {% endblock content %}

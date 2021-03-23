@@ -81,7 +81,7 @@ def get_post_obj(db: Session, slug: str):
 # Main Pages
 @app.get('/', response_class=HTMLResponse)
 def root(request: Request, db: Session = Depends(get_db)):
-    posts = crud.get_all_posts(db=db)
+    posts = crud.get_recent_posts(db=db, limit=10)
     return templates.TemplateResponse('home.html', {'request': request, 'title': 'Home', 'posts': posts})
 
 @app.get('/about', response_class=HTMLResponse)
@@ -245,21 +245,77 @@ def submit_edit(post_id: int, tmp_id: str = Body(..., embed=True), db: Session =
     for file in tmp_dir.iterdir():
         shutil.move(file, article_path.joinpath(file.name))
     shutil.rmtree(tmp_dir)
-    author_id = db.execute(select(User.id).where(User.username == article_config['author'])).scalar()
-    
-    data = {
-        'title': article_config['title'],
-        'slug': article_slug,
-        'user_id': author_id,
-        'description': article_config['description'],
-        'image_text': article_config['imageAlt'],
-        'photographer_name': article_config['photographerName'],
-        'photographer_url': article_config['photographerUrl'],
-        'keywords': article_config['keywords']
-    }
-    tags = [Tag(name=tag) for tag in article_config['tags']]
-    crud.edit_post(db=db, post_id=post_id, data=data, tags=tags)
     return JSONResponse({'url': f'/posts/{article_slug}'})
+
+
+@app.get('/posts/edit/{post_id}/info', response_class=HTMLResponse, dependencies=[Security(auth.verify_token, scopes=['edit'])])
+def edit_post_info(request: Request, post_id: int, db: Session = Depends(get_db)):
+    path = crud.get_post(db=db, post_id=post_id)['content_path']
+    config_path = Path(path).joinpath('article.config.json')
+    with open(config_path) as f:
+        config = json.load(f)
+    return templates.TemplateResponse('edit_info.html', {'request': request, 'config': config, 'post_id': post_id})
+
+
+@app.post('/posts/edit/{post_id}/info', response_class=RedirectResponse, dependencies=[Security(auth.verify_token, scopes=['edit'])])
+def update_post_info(post_id: int,
+    db: Session = Depends(get_db),
+    img_file: Optional[bytes] = File(None),
+    title: Optional[str] = Form(None),
+    description: Optional[str] = Form(None),
+    tags: Optional[str] = Form(None),
+    img_alt: Optional[str] = Form(None),
+    pg_name: Optional[str] = Form(None),
+    pg_url: Optional[str] = Form(None)
+    ):
+    article, img_path, article_path, content_path = crud.get_post(db=db, post_id=post_id).values()
+
+    img_path = Path('./static').joinpath(img_path)
+    if img_file:
+        img_ext = filetype.guess_extension(img_file)
+        if not img_ext:
+            img_ext = 'png'
+        os.remove(img_path)
+        img_path = Path(content_path).joinpath(f'headerImage.{img_ext}')
+        with open(img_path, 'wb') as f:
+            f.write(img_file)
+
+    input_data = {'title': title, 'description': description, 'imageAlt': img_alt, 'photographerName': pg_name, 'photographerUrl': pg_url}
+
+    config_path = Path(content_path).joinpath('article.config.json')
+    with open(config_path) as f:
+        config = json.load(f)
+    old_slug = slugify(config['title'], max_length=20)
+
+    tag_list = []
+    if tags:
+        tag_list = tags.replace(' ', '').split(',')
+        config['tags'] = tag_list
+        config['keywords'] = tags.replace(' ', '')
+
+    for item in input_data.items():
+        if item[1]: # index 1 is value, 0 is key
+            config[item[0]] = item[1]
+    
+    with open(config_path, 'w') as f:
+        json.dump(config, f, indent=4)
+
+    slug = slugify(config['title'], max_length=20)
+    new_path = Path(str(content_path).replace(old_slug, slug))
+    os.rename(content_path, new_path)
+
+    data = {
+    'title': config['title'],
+    'slug': slug,
+    'description': config['description'],
+    'image_text': config['imageAlt'],
+    'photographer_name': config['photographerName'],
+    'photographer_url': config['photographerUrl'],
+    'keywords': config['keywords']
+    }
+    tags = [Tag(name=tag.lower()) for tag in tag_list]
+    crud.edit_post(db=db, post_id=post_id, data=data, tags=tags)
+    return RedirectResponse(url=f"/posts/{slugify(config['title'], max_length=20)}", status_code=303)
 
 
 @app.get('/posts/create', response_class=HTMLResponse, dependencies=[Security(auth.verify_token, scopes=['post'])])
@@ -279,7 +335,7 @@ def upload(
     pg_name: str = Form(...),
     pg_url: str = Form(...),
     user: User = Depends(auth.verify_token)
-):
+    ):
     tmp_dir = next(create_tmp())
 
     tag_list = tags.replace(' ', '').split(',')
@@ -315,7 +371,7 @@ def upload(
         'photographer_name': pg_name,
         'photographer_url': pg_url,
         'keywords': tags.replace(' ', ''),
-        'tags': [Tag(name=tag) for tag in tags.replace(' ', '').split(',')]
+        'tags': [Tag(name=tag.lower()) for tag in tags.replace(' ', '').split(',')]
     }
     img_path = f'/tmp/{tmp_id}/headerImage.{img_ext}'
     return templates.TemplateResponse('edit.html', {'request': request, 'article_content': article_html, 'img_path': img_path, 'article': article, 'tmp_id': tmp_id, 'author': user.username})
@@ -362,7 +418,7 @@ def submit_article(tmp_id: str, db: Session = Depends(get_db)):
         'photographer_url': article_config['photographerUrl'],
         'keywords': article_config['keywords']
     }
-    tags = [Tag(name=tag) for tag in article_config['tags']]
+    tags = [Tag(name=tag.lower()) for tag in article_config['tags']]
     crud.create_post(db=db, post=data, tags=tags)
     return JSONResponse({'url': f'/posts/{article_slug}'})
 
@@ -377,6 +433,11 @@ def get_post(request: Request, slug: str, db: Session = Depends(get_db)):
         content = f.read()
     return templates.TemplateResponse('post.html', {'request': request, 'article': article, 'article_content': content, 'img_path': img_path})
 
+
+@app.get('/tags', response_class=HTMLResponse)
+def get_all_tags(request: Request, db: Session = Depends(get_db)):
+    tags = crud.get_all_tags(db=db)
+    return templates.TemplateResponse('taglist.html', {'request': request, 'tags': tags})
 
 @app.get('/tags/{tag}', response_class=HTMLResponse)
 def get_tags(request: Request, tag: str, db: Session = Depends(get_db)):

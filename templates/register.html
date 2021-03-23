@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="container">
+<div class="container content">
     <form name="formdata" class="row g-3" method="POST" action="">
         <legend class="border-bottom mb-4">Register Your Account</legend>
         {% if request.cookies.get('Errors') %}

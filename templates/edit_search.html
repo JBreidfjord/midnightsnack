@@ -16,16 +16,37 @@
 </div>
 {% endblock content %}
 
+{% block right_side_content %}
+
+<div>
+    Edit Mode: <span id="edit-mode">Content</span>
+    <button class="btn btn-outline-primary" id="toggle-mode">Toggle</button>
+</div>
+{% endblock right_side_content %}
+
 {% block scripts %}
 <script>
     $(document).ready(function(){
-        const posts = JSON.parse('{{ posts | tojson }}')
+        const editMode = document.getElementById("edit-mode");
+        const toggle = document.querySelector("#toggle-mode");
+
+        const posts = JSON.parse('{{ posts|sort(attribute="title")|tojson }}');
         const input = document.querySelector("input");
-        const searchResults = document.getElementById("search-results")
+        const searchResults = document.getElementById("search-results");
         let postMatch = posts;
         
         updateResults();
         input.addEventListener("input", updateSearch);
+        toggle.addEventListener("click", toggleMode);
+
+        function toggleMode() {
+            if (editMode.innerText.toLowerCase() == 'content') {
+                editMode.innerText = 'Info'
+            } else {
+                editMode.innerText = 'Content'
+            };
+            updateResults();
+        };
 
         function updateSearch(e) {
             postMatch = posts.filter(post => post.title.toLowerCase().startsWith(e.target.value.toLowerCase()));
@@ -38,8 +59,11 @@
             postMatch.forEach(function(post) {
                 let a = document.createElement("a");
                 a.textContent = post.title;
-                a.href = `/posts/edit/${post.id}`
-                a.className = "dropdown-item"
+                a.href = `/posts/edit/${post.id}`;
+                if (editMode.innerText.toLowerCase() == 'info') {
+                    a.href = `/posts/edit/${post.id}/info`
+                };
+                a.className = "dropdown-item";
                 fragment.appendChild(a);
             });
             searchResults.appendChild(fragment);

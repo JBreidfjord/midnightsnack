@@ -107,7 +107,7 @@ Post Editor:
     ✔ Update crud.get_post and get /posts/slug route for new data; provide new variables to jinja2 @done(21-03-18 23:56)
     ✔ Create route for editing existing article; /posts/edit/{slug} @done(21-03-19 12:20)
     ✔ Create edit submission function for when editing existing article @done(21-03-20 10:52)
-    ☐ Add edit functionality for header and article info
+    ✔ Add edit functionality for header and article info @done(21-03-22 21:05)
     Could use same idea as content editing, but replace with form to submit instead
     ✔ Create /posts/edit function @done(21-03-20 12:40)
     ✔ Create edit_search.html @done(21-03-21 18:59)
@@ -134,8 +134,6 @@ Post Editor:
 Del will remove from db and drive, archive will set archived to true in db and keeps folder on drive
 
 ✔ Change posts on home page to show title, author, date, and description @done(21-03-18 17:25)
-
-☐ Admin page
 
 ✔ Update style of login and registration forms to match submission form @done(21-03-21 22:14)
 

@@ -2,7 +2,7 @@ from sqlalchemy import select, delete, update, insert
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import DataError, IntegrityError
 from models import User, Post, Tag, tag_assoc_table
-from typing import List
+from typing import List, Optional
 from pathlib import Path
 import schema, shutil
 
@@ -45,6 +45,10 @@ def create_post(db: Session, post: schema.PostCreate, tags: List[Tag]):
 def get_all_posts(db: Session):
     return db.execute(select(Post)).scalars()
 
+def get_recent_posts(db: Session, limit: int):
+    posts = sorted(db.execute(select(Post)).scalars(), key=lambda x: x.date_posted, reverse=True)
+    return posts[:limit]
+
 def get_post(db: Session, slug: str = None, post_id: int = None):
     # split this to 2 functions
     # this one should just return the post object
@@ -72,12 +76,12 @@ def del_post(db: Session, slug: str):
     db.commit()
     shutil.rmtree(Path(f'./static/posts/{slug}'))
 
-def edit_post(db: Session, post_id: int, data: dict, tags: List[Tag]):
+def edit_post(db: Session, post_id: int, data: dict, tags: List[Tag] = []):
     db.execute(update(Post).where(Post.id == post_id).values(**data))
     db.commit()
-
-    post = db.execute(select(Post).where(Post.id == post_id)).scalar()
-    tag_handler(db=db, tags=tags, post=post)
+    if tags:
+        post = db.execute(select(Post).where(Post.id == post_id)).scalar()
+        tag_handler(db=db, tags=tags, post=post)
 
 # Tags
 def create_tag(db: Session, tags: List[str]):
@@ -91,6 +95,9 @@ def create_tag(db: Session, tags: List[str]):
         except IntegrityError:
             pass
     return tag_objs
+    
+def get_all_tags(db: Session):
+    return db.execute(select(Tag)).scalars()
 
 # User
 def get_user(db: Session, username: str):

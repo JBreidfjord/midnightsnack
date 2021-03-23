@@ -2,6 +2,7 @@ body {
     background: #131516;
     color: #d8d4cf;
     font-family: 'Work Sans', sans-serif;
+    text-transform: lowercase;
 }
 
 h1, h2, h3, h4, h5, h6, legend {
@@ -10,8 +11,12 @@ h1, h2, h3, h4, h5, h6, legend {
 }
 
 a {
-    color: #2b5479;
+    color: #3571a5;
     text-decoration: none;
+}
+
+.article-container, .content {
+    text-transform: none;
 }
 
 .navbar {

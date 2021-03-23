@@ -26,16 +26,16 @@
 {% endblock %}
 
 {% block content %}
-<div class="article-container">
+<div class="article-container container-fluid">
     <div class="article-header">
         <h2>{{ article.title }}</h2>
-        <h6>{{ author }} - {{ date }}</h6>
+        <h6><a href="/users/{{ author }}">{{ author }}</a> - {{ date }}</h6>
         <h6>
             {% for tag in article.tags %}
                 <small class="text-muted"><a href="/tags/{{ tag.name }}" class="link-secondary">#{{ tag.name }}</a></small>
             {% endfor %}
         </h6>
-        <figure class="figure">
+        <figure class="figure row justify-content-md-center">
             <img src="{{ url_for('static', path=img_path) }}" alt="{{ article.image_text }}" class="img-fluid figure-img">
             <figcaption class="figure-caption text-end">Photo by <a href="{{ article.photographer_url }}" class="link-secondary">{{ article.photographer_name }}</a></figcaption>
         </figure>

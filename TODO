@@ -112,21 +112,19 @@ Post Editor:
     ✔ Create /posts/edit function @done(21-03-20 12:40)
     ✔ Create edit_search.html @done(21-03-21 18:59)
     Display search bar (with autocompletion) to search by post title
-    ☐ Posts in edit search page should sort alphabetically
+    ✔ Posts in edit search page should sort alphabetically @done(21-03-22 18:35)
 
 ✔ Add 'All' option to posts dropdown @done(21-03-21 21:42)
 ✔ Create page with all posts listed @done(21-03-21 21:49)
-☐ Categorize to month/year or similar
-☐ Limit homepage to recent 10 posts then link for all posts there as well
-☐ Homepage should be sorted by most recent date
+✔ Limit homepage to recent 10 posts then link for all posts there as well @done(21-03-22 18:30)
+✔ Homepage should be sorted by most recent date @done(21-03-22 18:30)
 
 ☐ Replace tmp_dir/tmp_id paths with url_path_for()
 ☐ Split crud.get_post function
 ✔ Update route order to allow priority to /posts/create and /posts/edit priority @done(21-03-20 10:52)
 ✔ Fix image size in post.html @done(21-03-18 23:56)
 ✔ Fix quote block style @done(21-03-19 00:10)
-☐ Change article header style
-☐ Add href to author page in post.html
+✔ Add href to author page in post.html @done(21-03-22 17:27)
 
 ✔ Add /tags/{tag} route @done(21-03-21 22:10)
 ✔ Get matching posts from db @done(21-03-21 22:10)
@@ -135,8 +133,9 @@ Post Editor:
 ☐ Add archive function
 Del will remove from db and drive, archive will set archived to true in db and keeps folder on drive
 
-☐ Change posts on home page to show title, author, date, and description
-☐ Finish user, tag, and admin pages
+✔ Change posts on home page to show title, author, date, and description @done(21-03-18 17:25)
+
+☐ Admin page
 
 ✔ Update style of login and registration forms to match submission form @done(21-03-21 22:14)
 

@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <form action="/posts/edit/{{ post_id }}/info" method="POST" class="row g-3" enctype="multipart/form-data" id="article_upload" name="article_upload">
+        <div class="form-group">
+            <label for="title">Title</label>
+            <input type="text" class="form-control" id="title" name="title" placeholder="{{ config.title }}">
+        </div>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <input type="text" class="form-control" id="description" name="description" placeholder="{{ config.description }}">
+            <small id="desc-help" class="form-text text-muted">Short description of the article</small>
+        </div>
+        <div class="form-group">
+            <label for="tags">Tags</label>
+            <input type="text" class="form-control" id="tags" name="tags" placeholder="{{ config.tags|join(', ') }}">
+            <small id="tag-help" class="form-text text-muted">Tags must be separated by a comma</small>
+        </div>
+        <div class="form-group">
+            <label for="img-file">Header Image</label>
+            <input type="file" class="form-control-file" name="img_file" id="img-file">
+            <small id="img-help" class="form-text text-muted">.png format preferred</small>
+        </div>
+            <div class="form-group col-md-4">
+                <label for="img-alt">Image Alt Text</label>
+                <input type="text" class="form-control" id="img-alt" name="img_alt" placeholder="{{ config.imageAlt }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="pg-name">Photographer Name</label>
+                <input type="text" class="form-control" id="pg-name" name="pg_name" placeholder="{{ config.photographerName }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="pg-url">Photographer URL</label>
+                <input type="url" class="form-control" id="pg-url" name="pg_url" placeholder="{{ config.photographerUrl }}">
+            </div>
+        <input type="hidden" id="config-json" name="config_json" value="{{ config }}">
+        <input type="submit" class="btn btn-outline-primary">
+    </form>
+</div>
+{% endblock content %}

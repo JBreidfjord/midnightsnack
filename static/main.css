@@ -51,6 +51,10 @@ blockquote {
     font-style: italic;
 }
 
+blockquote p em {
+    font-style: normal;
+}
+
 #main {
     margin-top: 2rem;
 }

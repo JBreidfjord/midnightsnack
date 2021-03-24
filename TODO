@@ -113,6 +113,7 @@ Post Editor:
     ✔ Create edit_search.html @done(21-03-21 18:59)
     Display search bar (with autocompletion) to search by post title
     ✔ Posts in edit search page should sort alphabetically @done(21-03-22 18:35)
+    ☐ Cancel button on edit page
 
 ✔ Add 'All' option to posts dropdown @done(21-03-21 21:42)
 ✔ Create page with all posts listed @done(21-03-21 21:49)

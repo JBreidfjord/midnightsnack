@@ -70,13 +70,19 @@
     <main role="main" class="container" id="main">
         <div class="row">
             <div class="col-md-2">
-                {% block left_side_content %}{% endblock %}
+                <div class="container">
+                    {% block left_side_content %}{% endblock %}
+                </div>
             </div>
             <div class="col-md-8">
-                {% block content %}{% endblock %}
+                <div class="container">
+                    {% block content %}{% endblock %}
+                </div>
             </div>
             <div class="col-md-2">
-                {% block right_side_content %}{% endblock %}
+                <div class="container">
+                    {% block right_side_content %}{% endblock %}
+                </div>
             </div>
         </div>
     </main>

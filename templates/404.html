@@ -1,13 +1,15 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<h2>404: Not Found</h2>
-<br>
-<p>Sorry, we couldn't find the content you were looking for</p>
-<a href="/">Click here to go back home</a>
-<br><br>
-<div>
-    <h5>Error details:</h5>
-    <p>{{ exc.detail }}</p>
+<div class="container">
+    <h2>404: Not Found</h2>
+    <br>
+    <p>Sorry, we couldn't find the content you were looking for</p>
+    <a href="/">Click here to go back home</a>
+    <br><br>
+    <div>
+        <h5>Error details:</h5>
+        <p>{{ exc.detail }}</p>
+    </div>
 </div>
 {% endblock content %}

@@ -1,18 +1,20 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div>
-    <br>
-    <form action="/posts/edit" method="POST" class="row" id="edit_search" name="edit_search" autocomplete="off">
-        <div class="col"></div>
-        <div class="col-12">
-            <input type="text" class="form-control" id="search" name="search" placeholder="Title Search" required>
-            <br>
-            <div id="search-results">
+<div class="container">
+    <div>
+        <br>
+        <form action="/posts/edit" method="POST" class="row" id="edit_search" name="edit_search" autocomplete="off">
+            <div class="col"></div>
+            <div class="col-12">
+                <input type="text" class="form-control" id="search" name="search" placeholder="Title Search" required>
+                <br>
+                <div id="search-results">
+                </div>
             </div>
-        </div>
-        <div class="col"></div>
-    </form>
+            <div class="col"></div>
+        </form>
+    </div>
 </div>
 {% endblock content %}
 

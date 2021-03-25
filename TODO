@@ -134,6 +134,8 @@ Post Editor:
 ☐ Add archive function
 Del will remove from db and drive, archive will set archived to true in db and keeps folder on drive
 
+☐ Author info and social links in article footer
+
 ✔ Change posts on home page to show title, author, date, and description @done(21-03-18 17:25)
 
 ✔ Update style of login and registration forms to match submission form @done(21-03-21 22:14)

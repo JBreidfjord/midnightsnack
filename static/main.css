@@ -19,6 +19,10 @@ a {
     text-transform: none;
 }
 
+.exempt {
+    text-transform: none;
+}
+
 .navbar {
     font-family: 'Space Mono', monospace;
 }

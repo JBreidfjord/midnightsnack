@@ -412,6 +412,7 @@ def submit_article(tmp_id: str, db: Session = Depends(get_db)):
         'title': article_config['title'],
         'slug': article_slug,
         'user_id': author_id,
+        'date_posted': datetime.today().strftime('%Y-%m-%d'),
         'description': article_config['description'],
         'image_text': article_config['imageAlt'],
         'photographer_name': article_config['photographerName'],

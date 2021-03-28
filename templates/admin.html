@@ -2,6 +2,31 @@
 
 {% block content %}
 <div class="container">
-    
+    <h2>Update Scopes</h2>
+    <form action="/admin/scopes" method="POST" class="row g-3" id="update-scopes" name="update-scopes">
+        <div class="form-group">
+            <label for="user">User</label>
+            <input type="text" class="form-control" id="user" name="user" placeholder="User" required>
+        </div>
+        <div>
+            <div class="form-check col-md-4">
+                <label for="post" class="form-check-label">Post</label>
+                <input type="checkbox" class="form-check-input" id="post" name="post">
+            </div>
+            <div class="form-check col-md-4">
+                <label for="edit" class="form-check-label">Edit</label>
+                <input type="checkbox" class="form-check-input" id="edit" name="edit">
+            </div>
+            <div class="form-check col-md-4">
+                <label for="delete" class="form-check-label">Delete</label>
+                <input type="checkbox" class="form-check-input" id="delete" name="delete">
+            </div>
+            <div class="form-check col-md-4">
+                <label for="admin" class="form-check-label">Admin</label>
+                <input type="checkbox" class="form-check-input" id="admin" name="admin">
+            </div>
+        </div>
+        <input type="submit" class="btn btn-outline-primary">
+    </form>
 </div>
 {% endblock content %}

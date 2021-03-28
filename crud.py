@@ -102,3 +102,12 @@ def get_all_tags(db: Session):
 # User
 def get_user(db: Session, username: str):
     return db.execute(select(User).where(User.username == username)).scalar()
+
+def get_all_users(db: Session):
+    return db.execute(select(User)).scalars()
+
+def update_scopes(db: Session, username: str, inputs: dict):
+    scopes = [input[0] for input in inputs.items() if input[1]]
+    db.execute(update(User).values(scopes=scopes).where(User.username == username))
+    db.commit()
+    return

@@ -142,6 +142,10 @@ Del will remove from db and drive, archive will set archived to true in db and k
 
 ✔ Redirect from login/register if already logged in @done(21-03-22 13:38)
 
+Admin Page:
+    ☐ Make user selection a dropdown/search (for scalability)
+    ☐ Update route
+
 Code Style:
     ☐ Split routes between different router modules
     ☐ Condense repeated code to functions

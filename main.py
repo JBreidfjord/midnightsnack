@@ -219,7 +219,9 @@ def escape_html(file: Path, unescape: bool = False):
 
 @app.get('/posts/edit', response_class=HTMLResponse, dependencies=[Security(auth.verify_token, scopes=['edit'])])
 def search_posts(request: Request, db: Session = Depends(get_db)):
-    posts = [{'title': post.title, 'id': post.id} for post in crud.get_all_posts(db=db)]
+    posts = [{'title': post.title.replace('"', "'"), 'id': post.id} for post in crud.get_all_posts(db=db)]
+    posts = sorted(posts, key=lambda x: x['title'])
+    posts = json.dumps(posts)
     return templates.TemplateResponse('edit_search.html', {'request': request, 'posts': posts})
 
 @app.post('/posts/edit', response_class=RedirectResponse, dependencies=[Security(auth.verify_token, scopes=['edit'])])

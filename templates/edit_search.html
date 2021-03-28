@@ -32,7 +32,7 @@
         const editMode = document.getElementById("edit-mode");
         const toggle = document.querySelector("#toggle-mode");
 
-        const posts = JSON.parse('{{ posts|sort(attribute="title")|tojson }}');
+        const posts = JSON.parse(`{{ posts|safe }}`);
         const input = document.querySelector("input");
         const searchResults = document.getElementById("search-results");
         let postMatch = posts;

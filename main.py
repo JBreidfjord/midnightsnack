@@ -177,11 +177,17 @@ def del_post(slug: str, db: Session = Depends(get_db)):
     crud.del_post(db=db, slug=slug)
     return {'detail': 'Post deleted', 'status_code': 204}
 
-# Docs
+# Docs/Admin
 @app.get('/admin', dependencies=[Security(auth.verify_token, scopes=['admin'])], response_class=HTMLResponse)
 def admin(request: Request, db: Session = Depends(get_db)):
-    # set up scope setting function
-    return templates.TemplateResponse('admin.html', {'request': request})
+    users = crud.get_all_users(db=db)
+    return templates.TemplateResponse('admin.html', {'request': request, 'users': users})
+
+@app.post('/admin/scopes', dependencies=[Security(auth.verify_token, scopes=['admin'])]) # add response_class
+def update_scopes(user: str = Form(...), post: Optional[bool] = Form(None), edit: Optional[bool] = Form(None), delete: Optional[bool] = Form(None), admin: Optional[bool] = Form(None), db: Session = Depends(get_db)):
+    inputs = {'admin': admin, 'edit': edit, 'post': post, 'delete': delete}
+    crud.update_scopes(username=user, inputs=inputs, db=db)
+    return # update response
 
 @app.get('/openapi.json', dependencies=[Security(auth.verify_token, scopes=['admin'])])
 def get_openapi_json():

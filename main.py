@@ -11,14 +11,14 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from typing import List, Optional
+from typing import Optional
 from datetime import timedelta, datetime
 from secrets import token_hex
 from pathlib import Path
 from slugify import slugify
 import subprocess, shutil, json, os, html, filetype
 
-import config, tasks, auth
+import config, auth
 import schema, crud
 from models import User, Tag
 from database import SessionLocal, engine, Base
@@ -35,10 +35,7 @@ def get_application():
         allow_headers=['*']
     )
 
-    app.add_event_handler('startup', tasks.create_start_app_handler(app))
-    app.add_event_handler('shutdown', tasks.create_stop_app_handler(app))
-
-    app.mount('/static', StaticFiles(directory='static'), name='static') # maybe replace to serve with nginx?
+    app.mount('/static', StaticFiles(directory='static'), name='static')
     return app
 
 app = get_application()
@@ -178,16 +175,17 @@ def del_post(slug: str, db: Session = Depends(get_db)):
     return {'detail': 'Post deleted', 'status_code': 204}
 
 # Docs/Admin
-@app.get('/admin', dependencies=[Security(auth.verify_token, scopes=['admin'])], response_class=HTMLResponse)
-def admin(request: Request, db: Session = Depends(get_db)):
-    users = crud.get_all_users(db=db)
+@app.get('/admin', response_class=HTMLResponse, dependencies=[Security(auth.verify_token, scopes=['admin'])])
+async def admin(request: Request, db: Session = Depends(get_db)):
+    users = sorted(crud.get_all_users(db=db), key=lambda x: x.username)
     return templates.TemplateResponse('admin.html', {'request': request, 'users': users})
 
-@app.post('/admin/scopes', dependencies=[Security(auth.verify_token, scopes=['admin'])]) # add response_class
-def update_scopes(user: str = Form(...), post: Optional[bool] = Form(None), edit: Optional[bool] = Form(None), delete: Optional[bool] = Form(None), admin: Optional[bool] = Form(None), db: Session = Depends(get_db)):
-    inputs = {'admin': admin, 'edit': edit, 'post': post, 'delete': delete}
-    crud.update_scopes(username=user, inputs=inputs, db=db)
-    return # update response
+@app.post('/admin/scopes', response_class=RedirectResponse, dependencies=[Security(auth.verify_token, scopes=['admin'])])
+async def update_scopes(request: Request, user: str = Form(...), db: Session = Depends(get_db)):
+    formdata = await request.form()
+    scopes = [scope for scope in formdata if scope != 'user']
+    crud.update_scopes(username=user, scopes=scopes, db=db)
+    return RedirectResponse('/admin', status_code=303)
 
 @app.get('/openapi.json', dependencies=[Security(auth.verify_token, scopes=['admin'])])
 def get_openapi_json():
@@ -276,7 +274,9 @@ def update_post_info(post_id: int,
     pg_name: Optional[str] = Form(None),
     pg_url: Optional[str] = Form(None)
     ):
-    article, img_path, article_path, content_path = crud.get_post(db=db, post_id=post_id).values()
+    post = crud.get_post(db=db, post_id=post_id)
+    img_path = post['img_path']
+    content_path = post['content_path']
 
     img_path = Path('./static').joinpath(img_path)
     if img_file:

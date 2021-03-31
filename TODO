@@ -38,9 +38,10 @@ Authentication:
     ✔ Set scopes @done(21-03-14 15:20)
     ☐ Remember Me button on login page
 
-Password Reset:
-    ☐ Mail via Linode, need to enable
-    ☐ Set up form/page
+Mail:
+    ☐ Set up via Amazon SES
+    ☐ Password reset
+    ☐ Contact page
 
 Auto-blog:
     ✔ Convert markdown to HTML @done(21-03-20 10:16)
@@ -50,10 +51,10 @@ Auto-blog:
 
 ✔ Change User schemas, base should contain only import info like username, email, image @done(21-03-13 13:48)
 
-☐ Simplify db tasks, use onstartup and onshutdown events from fastapi
+✔ Simplify db tasks @done(21-03-30 17:46)
 
 Admin Page:
-    ☐ Permissions setting page to allow me to change a user's permissions
+    ✔ Permissions setting page to allow me to change a user's permissions @done(21-03-30 17:46)
 
 Post Editor:
     ✔ Generate random temp folder @done(21-03-16 22:43)
@@ -120,8 +121,6 @@ Post Editor:
 ✔ Limit homepage to recent 10 posts then link for all posts there as well @done(21-03-22 18:30)
 ✔ Homepage should be sorted by most recent date @done(21-03-22 18:30)
 
-☐ Replace tmp_dir/tmp_id paths with url_path_for()
-☐ Split crud.get_post function
 ✔ Update route order to allow priority to /posts/create and /posts/edit priority @done(21-03-20 10:52)
 ✔ Fix image size in post.html @done(21-03-18 23:56)
 ✔ Fix quote block style @done(21-03-19 00:10)
@@ -143,10 +142,12 @@ Del will remove from db and drive, archive will set archived to true in db and k
 ✔ Redirect from login/register if already logged in @done(21-03-22 13:38)
 
 Admin Page:
-    ☐ Make user selection a dropdown/search (for scalability)
-    ☐ Update route
+    ✔ Make user selection a dropdown/search (for scalability) @done(21-03-30 18:37)
+    ✔ Update route @done(21-03-30 17:56)
 
 Code Style:
+    ☐ Replace tmp_dir/tmp_id paths with url_path_for()
+    ☐ Split crud.get_post function
     ☐ Split routes between different router modules
     ☐ Condense repeated code to functions
     Submitting edits could mostly be added to a function

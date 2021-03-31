@@ -3,11 +3,11 @@ from starlette.datastructures import Secret
 
 config = Config('.env')
 
-PROJECT_NAME = 'Blog'
-VERSION = '0.0.1'
+PROJECT_NAME = 'The Midnight Snack'
+VERSION = '1.0.0'
 API_PREFIX = ''
 
-SECRET_KEY = config('SECRET_KEY', cast=Secret, default='CHANGEME')
+SECRET_KEY = config('SECRET_KEY', cast=Secret, default='CHANGE')
 ALGORITHM = config('ALGORITHM', cast=str)
 ACCESS_TOKEN_EXPIRE_MINUTES = config('ACCESS_TOKEN_EXPIRE_MINUTES', cast=int, default=15)
 

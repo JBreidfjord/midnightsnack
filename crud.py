@@ -1,8 +1,8 @@
 from sqlalchemy import select, delete, update, insert
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import DataError, IntegrityError
+from sqlalchemy.exc import IntegrityError
 from models import User, Post, Tag, tag_assoc_table
-from typing import List, Optional
+from typing import List
 from pathlib import Path
 import schema, shutil
 
@@ -106,8 +106,7 @@ def get_user(db: Session, username: str):
 def get_all_users(db: Session):
     return db.execute(select(User)).scalars()
 
-def update_scopes(db: Session, username: str, inputs: dict):
-    scopes = [input[0] for input in inputs.items() if input[1]]
+# Admin
+def update_scopes(db: Session, username: str, scopes: List[str]):
     db.execute(update(User).values(scopes=scopes).where(User.username == username))
     db.commit()
-    return

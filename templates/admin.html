@@ -6,7 +6,12 @@
     <form action="/admin/scopes" method="POST" class="row g-3" id="update-scopes" name="update-scopes">
         <div class="form-group">
             <label for="user">User</label>
-            <input type="text" class="form-control" id="user" name="user" placeholder="User" required>
+            <input list="userlist" class="form-control" id="user" name="user" placeholder="Username" required>
+            <datalist id="userlist">
+                {% for user in users %}
+                <option value="{{ user.username }}">
+                {% endfor %}
+            </datalist>
         </div>
         <div>
             <div class="form-check col-md-4">

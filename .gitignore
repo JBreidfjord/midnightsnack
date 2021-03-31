@@ -3,6 +3,14 @@
 .env
 /db/__pycache__
 scope.py
-/node_modules
 /static/posts
 /static/tmp
+
+# yarn
+.yarn/*
+!.yarn/cache
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions

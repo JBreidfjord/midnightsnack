@@ -1,12 +1,9 @@
-module.exports = {convert};
-module.exports = {titleConvert};
-
 const showdown = require('showdown');
 const fs = require('fs');
 
 const converter = new showdown.Converter({requireSpaceBeforeHeadingText: true, encodeEmails: false});
 
-function convert(tmpDir) {
+module.exports.convert = function (tmpDir) {
   fs.readFile(`${tmpDir}/article.md`, (error, data) => {
     if (error) {
       console.error(error);
@@ -24,7 +21,7 @@ function convert(tmpDir) {
   });
 };
 
-function titleConvert(title) {
+module.exports.titleConvert = function (title) {
   let html = converter.makeHtml(title);
   console.log(html)
 };

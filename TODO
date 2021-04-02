@@ -154,4 +154,4 @@ Code Style:
     ☐ Docstrings on all routes (will these also appear in the autodocs?)
     ☐ Consistency for use of 'post' vs 'article', just use post
     ☐ Add error handling to functions
-    ☐ Separate JS functions from HTML files
+    ✔ Separate JS functions from HTML files @done(21-04-01 21:40)

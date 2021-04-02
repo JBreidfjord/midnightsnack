@@ -33,7 +33,7 @@ def tag_handler(db: Session, tags: List[Tag], post: Post):
 
 def create_post(db: Session, post: schema.PostCreate, tags: List[Tag]):
     '''
-    Creates an instance of the Post class, taking the database session and post info defined by the schema as inputs
+    Creates an instance of the Post class, taking the database session and post info defined by the schema as inputs\n
     Tags must be a list of Tag objects
     '''
     obj = Post(**post)
@@ -49,19 +49,20 @@ def get_recent_posts(db: Session, limit: int):
     posts = sorted(db.execute(select(Post)).scalars(), key=lambda x: x.date_posted, reverse=True)
     return posts[:limit]
 
-def get_post(db: Session, slug: str = None, post_id: int = None):
-    # split this to 2 functions
-    # this one should just return the post object
-    # the other will return the data dict, calling this one for the post object
-    # could probably eliminate the if/elif block this way too
+def get_post(db: Session, slug: str) -> Post:
+    '''
+    Returns the Post object matching the given slug if it exists, else returns None
+    '''
+    return db.execute(select(Post).where(Post.slug == slug)).scalar()
+
+def get_post_data(db: Session, post_id: int = None, slug: str = None) -> dict:
     if slug:
-        obj = db.execute(select(Post).where(Post.slug == slug)).scalar()
+        obj: Post = db.execute(select(Post).where(Post.slug == slug)).scalar()
     elif post_id:
-        obj = db.execute(select(Post).where(Post.id == post_id)).scalar()
-        slug = obj.slug
+        obj: Post = db.execute(select(Post).where(Post.id == post_id)).scalar()
     if not obj:
         return None
-    content_path = Path(f'./static/posts/{slug}/')
+    content_path = Path(f'./static/posts/{obj.slug}/')
     for file in content_path.iterdir():
         if 'headerImage' in file.name:
             img = str(Path(*file.parts[1:]))

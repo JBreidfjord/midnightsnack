@@ -22,7 +22,7 @@ import config, auth
 import schema, crud
 from models import User, Tag
 from database import SessionLocal, engine, Base
-from dependencies import get_db
+from dependencies import get_db, get_post_obj
 
 def get_application():
     app = FastAPI(title=config.PROJECT_NAME, version=config.VERSION, docs_url=None, redoc_url=None, openapi_url=None)
@@ -67,13 +67,6 @@ async def http_exception_handler(request, exc):
             return templates.TemplateResponse('error.html', {'request': request, 'exc': exc}, status_code=exc.status_code)
     except AttributeError:
         return templates.TemplateResponse('500.html', {'request': request, 'exc': exc}, status_code=500)
-    
-# Functions
-def get_post_obj(db: Session, slug: str):
-    obj = crud.get_post(db=db, slug=slug)
-    if obj is None:
-        raise HTTPException(status_code=404, detail='Post not found')
-    return obj
 
 # Main Pages
 @app.get('/', response_class=HTMLResponse)
@@ -225,14 +218,14 @@ def search_posts(request: Request, db: Session = Depends(get_db)):
 @app.post('/posts/edit', response_class=RedirectResponse, dependencies=[Security(auth.verify_token, scopes=['edit'])])
 def redir_edit(search: str = Form(...), db: Session = Depends(get_db)):
     slug = slugify(search)
-    post = crud.get_post(slug=slug, db=db)['post_obj']
+    post = crud.get_post(slug=slug, db=db)
     return RedirectResponse(f'/posts/edit/{post.id}')
 
 @app.get('/posts/edit/{post_id}', dependencies=[Security(auth.verify_token, scopes=['edit'])])
 def edit_post(request: Request, post_id: int, db: Session = Depends(get_db)):
     tmp_dir = next(create_tmp())
     tmp_id = tmp_dir.replace('./static/tmp/', '')
-    article, img_path, article_path, content_path = crud.get_post(db=db, post_id=post_id).values()
+    article, img_path, article_path, content_path = crud.get_post_data(db=db, post_id=post_id).values()
     with open(article_path) as f:
         article_html = f.read()
 
@@ -256,7 +249,7 @@ def submit_edit(post_id: int, tmp_id: str = Body(..., embed=True), db: Session =
 
 @app.get('/posts/edit/{post_id}/info', response_class=HTMLResponse, dependencies=[Security(auth.verify_token, scopes=['edit'])])
 def edit_post_info(request: Request, post_id: int, db: Session = Depends(get_db)):
-    path = crud.get_post(db=db, post_id=post_id)['content_path']
+    path = crud.get_post_data(db=db, post_id=post_id)['content_path']
     config_path = Path(path).joinpath('article.config.json')
     with open(config_path) as f:
         config = json.load(f)
@@ -274,9 +267,9 @@ def update_post_info(post_id: int,
     pg_name: Optional[str] = Form(None),
     pg_url: Optional[str] = Form(None)
     ):
-    post = crud.get_post(db=db, post_id=post_id)
-    img_path = post['img_path']
-    content_path = post['content_path']
+    post_data = crud.get_post_data(db=db, post_id=post_id)
+    img_path = post_data['img_path']
+    content_path = post_data['content_path']
 
     img_path = Path('./static').joinpath(img_path)
     if img_file:
@@ -302,7 +295,7 @@ def update_post_info(post_id: int,
         config['keywords'] = tags.replace(' ', '')
 
     for item in input_data.items():
-        if item[1]: # index 1 is value, 0 is key
+        if item[1]: # 1st index is value, 0th is key
             config[item[0]] = item[1]
     
     with open(config_path, 'w') as f:
@@ -403,7 +396,7 @@ def convert_edit(tmp_id: str, article_md: bytes = File(...)):
     return FileResponse(f'{tmp_dir}/article.html')
 
 
-@app.post('/submit/{tmp_id}', response_class=JSONResponse, dependencies=[Security(auth.verify_token, scopes=['post'])])
+@app.post('/edit/{tmp_id}/submit', response_class=JSONResponse, dependencies=[Security(auth.verify_token, scopes=['post'])])
 def submit_article(tmp_id: str, db: Session = Depends(get_db)):
     tmp_dir = Path(f'./static/tmp/{tmp_id}')
     with open(f'{tmp_dir}/article.config.json') as f:
@@ -434,7 +427,7 @@ def submit_article(tmp_id: str, db: Session = Depends(get_db)):
 # Post Pages
 @app.get('/posts/{slug}', response_class=HTMLResponse)
 def get_post(request: Request, slug: str, db: Session = Depends(get_db)):
-    post = crud.get_post(db=db, slug=slug)
+    post = crud.get_post_data(db=db, slug=slug)
     if not post:
         raise HTTPException(status_code=404, detail='Post not found')
     article, img_path, article_path, content_path = post.values()

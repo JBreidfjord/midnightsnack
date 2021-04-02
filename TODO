@@ -146,8 +146,7 @@ Admin Page:
     ✔ Update route @done(21-03-30 17:56)
 
 Code Style:
-    ☐ Replace tmp_dir/tmp_id paths with url_path_for()
-    ☐ Split crud.get_post function
+    ✔ Split crud.get_post function @done(21-04-01 17:27)
     ☐ Split routes between different router modules
     ☐ Condense repeated code to functions
     Submitting edits could mostly be added to a function

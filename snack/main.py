@@ -6,7 +6,6 @@ import subprocess
 from datetime import datetime, timedelta
 from pathlib import Path
 from secrets import token_hex
-from typing import Optional
 
 import filetype
 from fastapi import Body, Depends, FastAPI, File, Form, Query, Request, Security, status
@@ -375,13 +374,13 @@ def edit_post_info(request: Request, post_id: int, db: Session = Depends(get_db)
 def update_post_info(
     post_id: int,
     db: Session = Depends(get_db),
-    img_file: Optional[bytes] = File(None),
-    title: Optional[str] = Form(None),
-    description: Optional[str] = Form(None),
-    tags: Optional[str] = Form(None),
-    img_alt: Optional[str] = Form(None),
-    pg_name: Optional[str] = Form(None),
-    pg_url: Optional[str] = Form(None),
+    img_file: bytes = File(None),
+    title: str = Form(None),
+    description: str = Form(None),
+    tags: str = Form(None),
+    img_alt: str = Form(None),
+    pg_name: str = Form(None),
+    pg_url: str = Form(None),
 ):
     post_data = crud.get_post_data(db=db, post_id=post_id)
     img_path = post_data["img_path"]

@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import Optional
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.openapi.models import OAuthFlows
@@ -26,7 +25,7 @@ class OAuth2PasswordBearerCookie(OAuth2):
         flows = OAuthFlows(password={"tokenUrl": tokenUrl, "scopes": scopes})
         super().__init__(flows=flows, scheme_name=scheme_name, auto_error=auto_error)
 
-    async def __call__(self, request: Request) -> Optional[str]:
+    async def __call__(self, request: Request):
         cookie_authorization: str = request.cookies.get("Authorization")
 
         cookie_scheme, cookie_param = get_authorization_scheme_param(cookie_authorization)
@@ -85,7 +84,7 @@ def authenticate_user(db: Session, username: str, password: str):
 
 
 # Tokens
-def create_access_token(data: schema.UserInfo, expires_delta: Optional[timedelta] = None):
+def create_access_token(data: schema.UserInfo, expires_delta: timedelta = None):
     to_encode = data
     if expires_delta:
         expire = datetime.utcnow() + expires_delta

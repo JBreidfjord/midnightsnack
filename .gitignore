@@ -1,7 +1,0 @@
-/venv
-/__pycache__
-.env
-/db/__pycache__
-/static/posts
-/static/tmp
-/node_modules

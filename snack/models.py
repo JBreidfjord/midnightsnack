@@ -12,7 +12,7 @@ from sqlalchemy import (
     Table,
     UniqueConstraint,
 )
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm import relationship
 
 from snack.database import Base
 

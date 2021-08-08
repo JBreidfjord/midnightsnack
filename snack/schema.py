@@ -1,9 +1,7 @@
 from datetime import datetime
-from typing import List, Optional
 
 from email_validator import EmailNotValidError, validate_email
 from pydantic import BaseModel, Field, HttpUrl, validator
-from slugify import slugify
 from sqlalchemy import select
 
 from snack import models
@@ -15,12 +13,12 @@ db = SessionLocal()
 class UserBase(BaseModel):
     username: str = Field(title="Username")
     email: str = Field(title="Email")
-    disabled: Optional[bool] = None
+    disabled: bool = None
 
 
 class UserInfo(UserBase):
     password: str = Field(title="Password")
-    scopes: Optional[list] = []
+    scopes: list = []
 
     class Config:
         orm_mode = True
@@ -68,7 +66,7 @@ class User(UserBase):
 
 class PostBase(BaseModel):
     title: str
-    date_posted: Optional[datetime] = datetime.today().strftime("%Y-%m-%d")
+    date_posted: datetime = datetime.today().strftime("%Y-%m-%d")
     content: str
     user_id: int
     slug: str
@@ -77,7 +75,7 @@ class PostBase(BaseModel):
     photographer_name: str
     photographer_url: HttpUrl
     keywords: str
-    tags: List[str]
+    tags: list[str]
 
 
 class PostCreate(PostBase):
@@ -101,5 +99,5 @@ class Token(BaseModel):
 
 
 class TokenData(BaseModel):
-    username: Optional[str] = None
-    scopes: List[str] = []
+    username: str = None
+    scopes: list[str] = []

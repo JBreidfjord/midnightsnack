@@ -1,6 +1,5 @@
 import shutil
 from pathlib import Path
-from typing import List
 
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.exc import IntegrityError
@@ -11,7 +10,7 @@ from snack.models import Post, Tag, User, tag_assoc_table
 
 
 # Post
-def tag_handler(db: Session, tags: List[Tag], post: Post):
+def tag_handler(db: Session, tags: list[Tag], post: Post):
     post_id = db.execute(select(Post.id).where(Post.title == post.title)).scalar()
     for tag in tags:
         tag_obj = db.execute(select(Tag).where(Tag.name == tag.name)).scalar()
@@ -36,7 +35,7 @@ def tag_handler(db: Session, tags: List[Tag], post: Post):
             db.commit()
 
 
-def create_post(db: Session, post: schema.PostCreate, tags: List[Tag]):
+def create_post(db: Session, post: schema.PostCreate, tags: list[Tag]):
     """
     Creates an instance of the Post class, taking the database session and post info defined by the schema as inputs\n
     Tags must be a list of Tag objects
@@ -88,7 +87,7 @@ def del_post(db: Session, slug: str):
     shutil.rmtree(Path(f"./static/posts/{slug}"))
 
 
-def edit_post(db: Session, post_id: int, data: dict, tags: List[Tag] = []):
+def edit_post(db: Session, post_id: int, data: dict, tags: list[Tag] = []):
     db.execute(update(Post).where(Post.id == post_id).values(**data))
     db.commit()
     if tags:
@@ -97,7 +96,7 @@ def edit_post(db: Session, post_id: int, data: dict, tags: List[Tag] = []):
 
 
 # Tags
-def create_tag(db: Session, tags: List[str]):
+def create_tag(db: Session, tags: list[str]):
     tag_objs = []
     for tag in tags:
         try:
@@ -124,6 +123,6 @@ def get_all_users(db: Session):
 
 
 # Admin
-def update_scopes(db: Session, username: str, scopes: List[str]):
+def update_scopes(db: Session, username: str, scopes: list[str]):
     db.execute(update(User).values(scopes=scopes).where(User.username == username))
     db.commit()

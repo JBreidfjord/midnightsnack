@@ -30,9 +30,12 @@ from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from snack import auth, config, crud, schema
+from snack.bookclub import crud as club_crud
+from snack.bookclub.models import Poll
 from snack.database import Base, SessionLocal, engine
 from snack.dependencies import get_db, get_post_obj
 from snack.models import Tag, User
+from snack.routers import bookclub
 
 
 def get_application():
@@ -43,6 +46,8 @@ def get_application():
         redoc_url=None,
         openapi_url=None,
     )
+
+    app.include_router(bookclub.router)
 
     app.add_middleware(
         CORSMiddleware,
@@ -240,8 +245,21 @@ def del_post(slug: str, db: Session = Depends(get_db)):
     dependencies=[Security(auth.verify_token, scopes=["admin"])],
 )
 async def admin(request: Request, db: Session = Depends(get_db)):
-    users = sorted(crud.get_all_users(db=db), key=lambda x: x.username)
-    return templates.TemplateResponse("admin.html", {"request": request, "users": users})
+    users = crud.get_all_users(db)
+    polls = club_crud.get_all_polls(db)
+    polls = [
+        {
+            "date": datetime.strptime(str(poll.date), "%Y%m").strftime("%B %Y"),
+            "id": poll.id,
+            "primary": poll.primary,
+        }
+        for poll in polls
+        if not poll.finished
+    ]
+
+    return templates.TemplateResponse(
+        "admin.html", {"request": request, "users": users, "polls": polls}
+    )
 
 
 @app.post(
@@ -256,14 +274,22 @@ async def update_scopes(request: Request, user: str = Form(...), db: Session = D
     return RedirectResponse("/admin", status_code=303)
 
 
-@app.get("/openapi.json", dependencies=[Security(auth.verify_token, scopes=["admin"])])
+@app.get(
+    "/openapi.json",
+    response_class=JSONResponse,
+    dependencies=[Security(auth.verify_token, scopes=["admin"])],
+)
 def get_openapi_json():
     return JSONResponse(
         get_openapi(title=config.PROJECT_NAME, version=config.VERSION, routes=app.routes)
     )
 
 
-@app.get("/docs", dependencies=[Security(auth.verify_token, scopes=["admin"])])
+@app.get(
+    "/docs",
+    response_class=HTMLResponse,
+    dependencies=[Security(auth.verify_token, scopes=["admin"])],
+)
 def get_docs():
     return get_swagger_ui_html(openapi_url="/openapi.json", title="Docs")
 

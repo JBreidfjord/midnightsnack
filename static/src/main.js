@@ -35,6 +35,19 @@ if (document.cookie.split(';').some((item) => item.trim().startsWith('User='))) 
         fragment.appendChild(li);
         postsDropdown.appendChild(fragment);
         };
+    if (document.cookie.split(';').some((item) => item.includes('bookclub'))) {
+        let fragment = document.createDocumentFragment();
+        let a = document.createElement('a');
+        let li = document.createElement('li');
+
+        a.textContent = 'Bookclub';
+        a.href = '/bookclub';
+        a.className = 'nav-link';
+        li.className = 'nav-item';
+        li.appendChild(a);
+        fragment.appendChild(li);
+        navAccount.appendChild(fragment);
+        };
     if (document.cookie.split(';').some((item) => item.includes('admin'))) {
         let fragment = document.createDocumentFragment();
         let a = document.createElement('a');

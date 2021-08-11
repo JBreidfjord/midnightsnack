@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block head %}
+{% set title = poll.date %}
+{% endblock head %}
+
+{% block content %}
+<div class="container">
+    <h2>{{ poll.date }} Initial</h2>
+    <form action="/bookclub/polls/{{ poll.id }}" method="POST" class="row g-3" id="poll" name="poll">
+        <div>
+        {% for choice in poll.choices|sort(attribute="book.title") %}
+            <div class="form-check dropdown mb-2 exempt">
+                <label class="form-check-label text-wrap dropdown-toggle" id="dropdown-{{ choice.id }}" data-bs-toggle="dropdown" aria-expanded="false">{{ choice.book.title }} | {{ choice.book.author }}</label>
+                <div class="dropdown-menu dropdown-menu-dark container">
+                    <div class="row">
+                        <img class="mx-auto my-auto col-md-3" style="max-width: 50%; height: 100%" src="{{ url_for('static', path=choice.book.image) }}">
+                        <div class="px-4 py-2 col-md-8 text-wrap">
+                            <div>{{ choice.book.description }}</div>
+                            <div class="text-center">{{ choice.book.page_count }} pages</div>
+                        </div>
+                    </div>
+                </div>
+                <input type="checkbox" class="form-check-input" id="{{ choice.id }}" name="{{ choice.id }}">
+            </div>
+        {% endfor %}
+        </div>
+        <input type="hidden" id="user" name="user" value="{{ request.cookies.get('User') }}">
+        <input type="submit" class="btn btn-outline-primary" onclick="return confirm('Choices cannot be altered after submitting.\nAre you sure?')">
+    </form>
+</div>
+{% endblock content %}

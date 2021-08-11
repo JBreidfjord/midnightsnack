@@ -5,13 +5,11 @@
     <h2>Update Scopes</h2>
     <form action="/admin/scopes" method="POST" class="row g-3" id="update-scopes" name="update-scopes">
         <div class="form-group">
-            <label for="user">User</label>
-            <input list="userlist" class="form-control" id="user" name="user" placeholder="Username" required>
-            <datalist id="userlist">
-                {% for user in users %}
-                <option value="{{ user.username }}">
+            <select class="form-select" id="user" name="user" form="update-scopes">
+                {% for user in users|sort(attribute="username") %}
+                    <option value="{{ user.username }}">{{ user.username }}</option>
                 {% endfor %}
-            </datalist>
+            </select>
         </div>
         <div>
             <div class="form-check col-md-4">
@@ -30,6 +28,35 @@
                 <label for="admin" class="form-check-label">Admin</label>
                 <input type="checkbox" class="form-check-input" id="admin" name="admin">
             </div>
+            <div class="form-check col-md-4">
+                <label for="bookclub" class="form-check-label">Bookclub</label>
+                <input type="checkbox" class="form-check-input" id="bookclub" name="bookclub">
+            </div>
+        </div>
+        <input type="submit" class="btn btn-outline-primary">
+    </form>
+    <br>
+    <h2>Create Poll</h2>
+    <form action="/bookclub/polls/new" method="POST" class="row g-3" id="create-poll" name="create-poll">
+        <div class="form-group">
+            <label for="date">Date</label>
+            <input type="month" class="form-control" id="date" name="date" required>
+        </div>
+        <input type="submit" class="btn btn-outline-primary">
+    </form>
+    <br>
+    <h2>Complete Poll</h2>
+    <form action="/bookclub/polls/complete" method="POST" class="row g-3" id="complete-poll" name="complete-poll">
+        <div class="form-group">
+            <select class="form-select" id="id" name="id" form="complete-poll">
+                {% for poll in polls|sort(attribute="date,primary", reverse=true) %}
+                    {% if poll.primary %}
+                        <option value="{{ poll.id }}">{{ poll.date }} Initial</option>
+                    {% else %}
+                        <option value="{{ poll.id }}">{{ poll.date }} Final</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
         </div>
         <input type="submit" class="btn btn-outline-primary">
     </form>

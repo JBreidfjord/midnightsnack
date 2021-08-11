@@ -1,0 +1,78 @@
+{% extends "layout.html" %}
+
+{% block head %}
+{% set title = "Bookclub" %}
+{% endblock head %}
+
+{% block content %}
+<div class="container-md">
+    {% if current is not none %}
+    <h2>Current Read</h2>
+    <h4 class="text-end exempt mb-5">
+        {{ current.title }}
+        <small class="text-muted d-block">{{ current.author }}</small>
+    </h4>
+    <div class="row">
+        <img src="{{ url_for('static', path=current.image) }}" class="mb-2 mx-auto col-md-3" style="max-width: 50%; height: 100%;" alt="Cover image for {{ current.title }}">
+        <div class="exempt mb-2 col-md-9">
+            {{ current.description }}
+        </div>
+    </div>
+    <br>
+    {% endif %}
+
+    {% if polls %}
+    <h2>Polls</h2>
+    {% for poll in polls|sort(attribute="date,primary", reverse=true) %}
+        <ul class="list-inline exempt">
+            <li class="list-inline-item"><a href="/bookclub/polls/{{ poll.id }}"><i class="bi bi-arrow-right-circle text-gold"></i></a></li>
+            {% if poll.primary %}
+                <li class="list-inline-item">{{ poll.date }} Initial</li>
+            {% else %}
+                <li class="list-inline-item">{{ poll.date }} Final</li>
+            {% endif %}
+        </ul>
+    {% endfor %}
+    <br>
+    {% endif %}
+
+    {% if books %}
+    <h2>Book List</h2>
+    <div class="exempt">
+        {% for book in books|sort(attribute="title") %}
+        <ul class="list-inline">
+            <li class="list-inline-item"><a href="/bookclub/books/{{ book.id }}"><i class="bi bi-arrow-right-circle text-gold"></i></a></li>
+            <li class="list-inline-item">{{ book.title }} | {{ book.author }}</li>
+        </ul>
+        {% endfor %}
+    </div>
+    <br>
+    {% endif %}
+
+    <h2>New Book</h2>
+    <form action="/bookclub/books/new" method="POST" class="row g-3" id="new-book" name="new-book">
+        {% if request.cookies.get("BookErrors") %}
+            <div class="error">
+                {% set errors = request.cookies.get("BookErrors").split(":") %}
+                <ul>
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% elif request.cookies.get("BookSuccess") %}
+            <div class="success">
+                <ul>
+                    <li>Successfully added <span class="book-title exempt">{{ request.cookies.get("BookSuccess") }}</span> to the book list!</li>
+                </ul>
+            </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="url">Goodreads URL</label>
+            <input type="text" class="form-control" id="url" name="url" required>
+        </div>
+        <input type="submit" class="btn btn-outline-primary">
+    </form>
+</div>
+{% endblock content %}

@@ -2,12 +2,12 @@ from datetime import datetime
 
 from slugify import slugify
 from sqlalchemy import (
+    ARRAY,
     Boolean,
     Column,
     DateTime,
     ForeignKey,
     Integer,
-    PickleType,
     String,
     Table,
     UniqueConstraint,
@@ -37,7 +37,7 @@ class User(Base):
     email = Column(String, unique=True, nullable=False)
     image_file = Column(String, nullable=False, default="default.jpg")
     password = Column(String(60), nullable=False)
-    scopes = Column(PickleType, default=[])
+    scopes = Column(ARRAY(String), default=[])
     disabled = Column(Boolean, default=False)
 
     posts = relationship("Post", backref="author", lazy=True)

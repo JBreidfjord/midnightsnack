@@ -103,7 +103,7 @@ def create_tag(db: Session, tags: list[str]):
             obj = Tag(name=tag)
             db.add(obj)
             db.commit()
-            obj.append(tag_objs)
+            tag_objs.append(obj)
         except IntegrityError:
             pass
     return tag_objs

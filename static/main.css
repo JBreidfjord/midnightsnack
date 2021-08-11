@@ -23,6 +23,14 @@ a {
     text-transform: none;
 }
 
+.book-title {
+    font-style: italic;
+}
+
+.text-gold {
+    color: #b9aa4c;
+}
+
 .navbar {
     font-family: 'Space Mono', monospace;
 }

@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+
+{% block head %}
+{% set title = book.title %}
+{% endblock head %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center exempt mb-5">
+        {{ book.title }}
+        <small class="text-muted d-block">{{ book.author }}</small>
+    </h2>
+    <div class="row">
+        <img src="{{ url_for('static', path=book.image) }}" class="mb-2 mx-auto col-md-3" style="max-width: 50%; height: 100%;" alt="Cover image for {{ book.title }}">
+        <div class="exempt mb-2 col-md-9">
+            {{ book.description }}
+        </div>
+    </div>
+</div>
+{% endblock content %}

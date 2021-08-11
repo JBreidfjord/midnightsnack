@@ -1,14 +1,16 @@
-from sqlalchemy import select, delete, update, insert
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
-from models import User, Post, Tag, tag_assoc_table
-from typing import List
+import shutil
 from pathlib import Path
-import schema, shutil
+
+from sqlalchemy import delete, insert, select, update
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+
+from snack import schema
+from snack.models import Post, Tag, User, tag_assoc_table
 
 
 # Post
-def tag_handler(db: Session, tags: List[Tag], post: Post):
+def tag_handler(db: Session, tags: list[Tag], post: Post):
     post_id = db.execute(select(Post.id).where(Post.title == post.title)).scalar()
     for tag in tags:
         tag_obj = db.execute(select(Tag).where(Tag.name == tag.name)).scalar()
@@ -27,86 +29,100 @@ def tag_handler(db: Session, tags: List[Tag], post: Post):
     tag_names = [tag.name for tag in tags]
     for old_tag in old_tags:
         if old_tag.name not in tag_names:
-            db.execute(delete(tag_assoc_table).where(Post.id == post_id).where(Tag.id == old_tag.id))
+            db.execute(
+                delete(tag_assoc_table).where(Post.id == post_id).where(Tag.id == old_tag.id)
+            )
             db.commit()
 
 
-def create_post(db: Session, post: schema.PostCreate, tags: List[Tag]):
-    '''
-    Creates an instance of the Post class, taking the database session and post info defined by the schema as inputs
+def create_post(db: Session, post: schema.PostCreate, tags: list[Tag]):
+    """
+    Creates an instance of the Post class, taking the database session and post info defined by the schema as inputs\n
     Tags must be a list of Tag objects
-    '''
+    """
     obj = Post(**post)
     db.add(obj)
     db.commit()
     tag_handler(db=db, tags=tags, post=obj)
     return obj
 
+
 def get_all_posts(db: Session):
     return db.execute(select(Post)).scalars()
+
 
 def get_recent_posts(db: Session, limit: int):
     posts = sorted(db.execute(select(Post)).scalars(), key=lambda x: x.date_posted, reverse=True)
     return posts[:limit]
 
-def get_post(db: Session, slug: str = None, post_id: int = None):
-    # split this to 2 functions
-    # this one should just return the post object
-    # the other will return the data dict, calling this one for the post object
-    # could probably eliminate the if/elif block this way too
+
+def get_post(db: Session, slug: str) -> Post:
+    """
+    Returns the Post object matching the given slug if it exists, else returns None
+    """
+    return db.execute(select(Post).where(Post.slug == slug)).scalar()
+
+
+def get_post_data(db: Session, post_id: int = None, slug: str = None) -> dict:
     if slug:
-        obj = db.execute(select(Post).where(Post.slug == slug)).scalar()
+        obj: Post = db.execute(select(Post).where(Post.slug == slug)).scalar()
     elif post_id:
-        obj = db.execute(select(Post).where(Post.id == post_id)).scalar()
-        slug = obj.slug
+        obj: Post = db.execute(select(Post).where(Post.id == post_id)).scalar()
     if not obj:
         return None
-    content_path = Path(f'./static/posts/{slug}/')
+    content_path = Path(f"./static/posts/{obj.slug}/")
     for file in content_path.iterdir():
-        if 'headerImage' in file.name:
+        if "headerImage" in file.name:
             img = str(Path(*file.parts[1:]))
-        if '.html' in file.name:
+        if ".html" in file.name:
             article = file
-    return {'post_obj': obj, 'img_path': img, 'article_path': article, 'content_path': content_path}
+    return {"post_obj": obj, "img_path": img, "article_path": article, "content_path": content_path}
+
 
 def del_post(db: Session, slug: str):
     post_id = db.execute(select(Post.id).where(Post.slug == slug)).scalar()
     db.execute(delete(tag_assoc_table).where(Post.id == post_id))
     db.execute(delete(Post).where(Post.slug == slug))
     db.commit()
-    shutil.rmtree(Path(f'./static/posts/{slug}'))
+    shutil.rmtree(Path(f"./static/posts/{slug}"))
 
-def edit_post(db: Session, post_id: int, data: dict, tags: List[Tag] = []):
+
+def edit_post(db: Session, post_id: int, data: dict, tags: list[Tag] = []):
     db.execute(update(Post).where(Post.id == post_id).values(**data))
     db.commit()
     if tags:
         post = db.execute(select(Post).where(Post.id == post_id)).scalar()
         tag_handler(db=db, tags=tags, post=post)
 
+
 # Tags
-def create_tag(db: Session, tags: List[str]):
+def create_tag(db: Session, tags: list[str]):
     tag_objs = []
     for tag in tags:
         try:
             obj = Tag(name=tag)
             db.add(obj)
             db.commit()
-            obj.append(tag_objs)
+            tag_objs.append(obj)
         except IntegrityError:
             pass
     return tag_objs
-    
+
+
 def get_all_tags(db: Session):
     return db.execute(select(Tag)).scalars()
+
 
 # User
 def get_user(db: Session, username: str):
     return db.execute(select(User).where(User.username == username)).scalar()
 
+
 def get_all_users(db: Session):
     return db.execute(select(User)).scalars()
 
+
 # Admin
-def update_scopes(db: Session, username: str, scopes: List[str]):
+def update_scopes(db: Session, username: str, scopes: list[str]):
     db.execute(update(User).values(scopes=scopes).where(User.username == username))
     db.commit()

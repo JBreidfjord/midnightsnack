@@ -20,7 +20,7 @@ def _update_choices(db: Session, poll: schema.Poll):
     """Adds existing choices to poll."""
     if poll.primary:
         for book in get_all_books(db):
-            if not book.read and not book.veto:
+            if not book.read and not book.veto and not book.current:
                 create_choice(db, poll.id, {"book_id": book.id})
     else:
         primary_id = (
@@ -37,7 +37,7 @@ def _update_choices(db: Session, poll: schema.Poll):
             .all()
         )
         for book in results:
-            if not book.read and not book.veto:
+            if not book.read and not book.veto and not book.current:
                 create_choice(db, poll.id, {"book_id": book.id})
 
 
